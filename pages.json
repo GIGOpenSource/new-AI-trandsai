@@ -51,6 +51,28 @@
       }
     }
   ],
+  "subPackages": [
+    {
+      "root": "pages-sub",
+      "pages": [
+        { "path": "companion/index", "style": { "navigationStyle": "custom", "navigationBarTitleText": "资料" } },
+        { "path": "create/index", "style": { "navigationStyle": "custom", "navigationBarTitleText": "创建" } },
+        { "path": "feedback/index", "style": { "navigationStyle": "custom", "navigationBarTitleText": "反馈" } },
+        { "path": "my-companions/index", "style": { "navigationStyle": "custom", "navigationBarTitleText": "我的伴侣" } },
+        { "path": "intimacy/index", "style": { "navigationStyle": "custom", "navigationBarTitleText": "亲密度" } },
+        { "path": "my-posts/index", "style": { "navigationStyle": "custom", "navigationBarTitleText": "我的帖子" } },
+        { "path": "notifications/index", "style": { "navigationStyle": "custom", "navigationBarTitleText": "通知" } },
+        { "path": "settings/index", "style": { "navigationStyle": "custom", "navigationBarTitleText": "通知设置" } },
+        { "path": "privacy/index", "style": { "navigationStyle": "custom", "navigationBarTitleText": "隐私政策" } },
+        { "path": "moment/index", "style": { "navigationStyle": "custom", "navigationBarTitleText": "朋友圈详情" } },
+        { "path": "post/index", "style": { "navigationStyle": "custom", "navigationBarTitleText": "帖子详情" } },
+        { "path": "not-found/index", "style": { "navigationStyle": "custom", "navigationBarTitleText": "404" } }
+      ]
+    }
+  ],
+  "preloadRule": {
+    "pages/home/index": { "network": "all", "packages": ["pages-sub"] }
+  },
   "globalStyle": {
     "navigationBarTextStyle": "white",
     "navigationBarBackgroundColor": "#0f0f12",

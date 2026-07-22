@@ -164,10 +164,7 @@ async function handleSendComment(e) {
 
 function isMe(comment) {
   if (!comment) return false;
-  if (comment.is_user) return true;
-  const uid = getCurrentUserId();
-  const userId = comment.user_id;
-  return userId != null && uid != null && String(userId) === String(uid);
+  return comment.is_me === true;
 }
 
 function setReplyTo(comment) {
@@ -214,14 +211,14 @@ function setReplyTo(comment) {
             class="comment-row"
             @tap="setReplyTo(c)"
           >
-            <view class="comment-avatar">{{ isMe(c) ? t("common.me") : (c.companion_name || "?").charAt(0) }}</view>
+            <view class="comment-avatar">{{ (c.companion_name || "?").charAt(0) }}</view>
             <view class="flex-1">
               <view class="comment-bubble">
                 <text class="comment-name" :class="{ me: isMe(c) }">{{
-                  isMe(c) ? t("common.me") : formatCompanionName(c.companion_name, t("home.defaultCompanionName"))
+                  c.companion_name || formatCompanionName(c.companion_name, t("home.defaultCompanionName"))
                 }}</text>
                 <text>
-                  <text v-if="c.reply_to_name" class="text-primary">@{{
+                <text v-if="c.reply_to_name" :class="{ 'text-primary': c.is_reply_me }">@{{
                     c.reply_to_name === "我" ? t("common.me") : c.reply_to_name
                   }} </text>
                   {{ c.content }}

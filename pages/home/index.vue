@@ -433,7 +433,7 @@ async function handleComment(momentId, e) {
         user_id: getCurrentUserId(),
         is_user: true,
         companion_id: null,
-        companion_name: t("common.me"),
+        companion_name: (() => { try { return JSON.parse(getItem("user_info") || "{}").nickname || ""; } catch { return ""; } })(),
         content,
         created_at: new Date().toISOString(),
         pending: true,
@@ -469,7 +469,7 @@ async function handleComment(momentId, e) {
             user_id: getCurrentUserId(),
             is_user: true,
             companion_id: null,
-            companion_name: t("common.me"),
+            companion_name: data.companion_name || (() => { try { return JSON.parse(getItem("user_info") || "{}").nickname || ""; } catch { return ""; } })(),
             content: data.content || content,
             created_at: data.created_at,
           },
@@ -547,14 +547,7 @@ async function handleComment(momentId, e) {
 
 function isCommentByMe(comment) {
   if (!comment) return false;
-  if (comment.is_user) return true;
-  const currentUserId = getCurrentUserId();
-  const userId = comment.user_id;
-  return (
-    userId != null &&
-    currentUserId != null &&
-    String(userId) === String(currentUserId)
-  );
+  return comment.is_me === true;
 }
 
 // ───────────────── 筛选弹窗 ─────────────────
@@ -824,16 +817,14 @@ onShow(() => {
             <view v-for="comment in m.comments" :key="comment.id" class="comment-line">
               <text
                 class="comment-name"
-                :class="isCommentByMe(comment) ? 'mine' : 'text-primary'"
+                :class="{ mine: isCommentByMe(comment) }"
               >
                 {{
-                  isCommentByMe(comment)
-                    ? t("common.me")
-                    : formatCompanionName(comment.companion_name, t("home.defaultCompanionName"))
+                  comment.companion_name || formatCompanionName(comment.companion_name, t("home.defaultCompanionName"))
                 }}
               </text>
               <text class="comment-content" :class="{ pending: comment.pending }">
-                <text v-if="comment.reply_to_name" class="text-primary reply-to">
+                <text v-if="comment.reply_to_name" :class="['reply-to', { 'text-primary': comment.is_reply_me }]">
                   @{{
                     comment.reply_to_name === "我"
                       ? t("common.me")
@@ -1154,7 +1145,7 @@ onShow(() => {
 .comment-name {
   font-weight: 500;
   margin-right: 8rpx;
-  color: var(--brand);
+  color: var(--fg-muted);
   &.mine { color: var(--brand); }
 }
 .comment-content {

@@ -211,41 +211,76 @@ async function handleAutoFill() {
     const persona = list[Math.floor(Math.random() * list.length)];
     const apiGender = persona.gender === "男" ? "male" : "female";
 
+    // Step 1: 调用接口获取随机名字
+    let pickedName = persona.name;
     try {
       const data = await apiFetch(
         `/api/culture/names?lang=${lang}&gender=${apiGender}&count=8`
       );
       if (data.names?.length) {
-        const pick = data.names[Math.floor(Math.random() * data.names.length)];
-        name.value = formatCompanionName(pick, persona.name);
-      } else {
-        name.value = persona.name;
+        pickedName = data.names[Math.floor(Math.random() * data.names.length)];
       }
     } catch {
-      name.value = persona.name;
+      /* fallback to preset name */
     }
-
-    age.value = persona.age;
-    gender.value = persona.gender === "男" ? "male" : "female";
-    sexualOrientation.value = persona.sexual_orientation || "heterosexual";
-    city.value = persona.city;
-    selectedPersonalities.value = String(persona.personality || "")
+    const finalName = formatCompanionName(pickedName, persona.name);
+    const finalAge = persona.age;
+    const finalGender = apiGender;
+    const finalOrientation = persona.sexual_orientation || "heterosexual";
+    const finalCity = persona.city;
+    const finalPersonalities = String(persona.personality || "")
       .split(/[、,，]/)
       .map((p) => p.trim())
       .filter(Boolean);
-    background.value = persona.background;
-    speakingStyle.value = persona.speech_style;
-    hobbies.value = persona.hobbies;
-    values.value = persona.values;
-    fears.value = persona.fears;
-    loveView.value = persona.love_view;
-    dailyRoutine.value = persona.daily_routine;
-    favoriteThings.value = persona.favorite_things;
-    mbti.value = persona.mbti;
-    lifeStory.value = persona.life_story || "";
-    culturalValues.value = persona.cultural_values || "";
-    genderPerspective.value = persona.gender_perspective || "";
+    const finalMbti = persona.mbti || "";
+
+    // Step 2: 调用 /companions/generate 生成详细内容
+    const generatePayload = {
+      name: finalName,
+      age: finalAge,
+      gender: persona.gender,
+      city: finalCity,
+      personality: finalPersonalities.join("、"),
+      background: persona.background || "",
+      speech_style: persona.speech_style || "",
+    };
+
+    let generated = null;
+    try {
+      generated = await apiFetch("/companions/generate", {
+        method: "POST",
+        data: generatePayload,
+        timeout: 60000,
+      });
+    } catch (e) {
+      console.warn("[AutoFill] generate 接口失败，回退本地预设:", e);
+    }
+
+    // Step 3: 两个接口都完成后，一次性填充所有字段
+    name.value = finalName;
+    age.value = finalAge;
+    gender.value = finalGender;
+    sexualOrientation.value = finalOrientation;
+    city.value = finalCity;
+    selectedPersonalities.value = finalPersonalities;
+    mbti.value = finalMbti;
     errors.value = {};
+
+    const g = generated || {};
+    background.value = g.background || persona.background || "";
+    speakingStyle.value = g.speech_style || persona.speech_style || "";
+    hobbies.value = g.hobbies || persona.hobbies || "";
+    values.value = g.values || persona.values || "";
+    fears.value = g.fears || persona.fears || "";
+    loveView.value = g.love_view || persona.love_view || "";
+    dailyRoutine.value = g.daily_routine || persona.daily_routine || "";
+    favoriteThings.value = g.favorite_things || persona.favorite_things || "";
+    lifeStory.value = g.life_story || persona.life_story || "";
+    culturalValues.value = g.cultural_values || persona.cultural_values || "";
+    genderPerspective.value = g.gender_perspective || persona.gender_perspective || "";
+  } catch (err) {
+    console.error("[AutoFill] 生成失败:", err);
+    showToast(t("common.networkError") || "网络错误，请重试");
   } finally {
     autoFilling.value = false;
   }
@@ -408,6 +443,14 @@ function onAgeChange(e) {
         <text>{{ t("createCompanion.autoFill") }}</text>
       </view>
     </template>
+
+    <!-- 一键填充加载遮罩 -->
+    <view v-if="autoFilling" class="autofill-mask">
+      <view class="autofill-loader">
+        <view class="loader-spinner"></view>
+        <text class="loader-text">AI 正在生成人设...</text>
+      </view>
+    </view>
 
     <scroll-view scroll-y class="form-scroll">
       <view class="form-inner">
@@ -971,5 +1014,45 @@ function onAgeChange(e) {
 
 .autofill-icon {
   font-size: 24rpx;
+}
+
+.autofill-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.autofill-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24rpx;
+  background: var(--bg-card, #1a1a2e);
+  border-radius: 32rpx;
+  padding: 48rpx 72rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.4);
+}
+
+.loader-spinner {
+  width: 64rpx;
+  height: 64rpx;
+  border: 6rpx solid rgba(236, 72, 153, 0.2);
+  border-top-color: #ec4899;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.loader-text {
+  color: #fff;
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 </style>

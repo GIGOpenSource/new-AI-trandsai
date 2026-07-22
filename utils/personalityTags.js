@@ -1,0 +1,226 @@
+/**
+ * @description 性格标签多语言映射：标准英文 key → 各语言展示文案，支持任意语言标签反查与翻译。
+ */
+
+/** 性格标签翻译表：外层 key 为语言代码，内层 key 为标准英文标识 */
+export const personalityTagTranslations = {
+  zh: {
+    gentle: "温柔",
+    cute: "可爱",
+    mature: "成熟",
+    scheming: "腹黑",
+    lively: "活泼",
+    sunny: "阳光",
+    quiet: "安静",
+    straightforward: "直率",
+    warm: "温暖",
+    calm: "冷静",
+    cool: "酷",
+    artsy: "文艺",
+    "fun-loving": "爱玩",
+    relaxed: "放松",
+    outgoing: "外向",
+    passionate: "热情",
+    elegant: "优雅",
+    creative: "有创意",
+    intense: "热烈",
+    polite: "有礼貌",
+    "easy-going": "随和",
+    tsundere: "傲娇",
+    yandere: "病娇",
+    oneesan: "御姐",
+    aloof: "冷淡",
+  },
+  en: {
+    gentle: "gentle",
+    cute: "cute",
+    mature: "mature",
+    scheming: "scheming",
+    lively: "lively",
+    sunny: "sunny",
+    quiet: "quiet",
+    straightforward: "straightforward",
+    warm: "warm",
+    calm: "calm",
+    cool: "cool",
+    artsy: "artsy",
+    "fun-loving": "fun-loving",
+    relaxed: "relaxed",
+    outgoing: "outgoing",
+    passionate: "passionate",
+    elegant: "elegant",
+    creative: "creative",
+    intense: "intense",
+    polite: "polite",
+    "easy-going": "easy-going",
+    tsundere: "tsundere",
+    yandere: "yandere",
+    oneesan: "onee-san",
+    aloof: "aloof",
+  },
+  ja: {
+    gentle: "優しい",
+    cute: "かわいい",
+    mature: "成熟した",
+    scheming: "腹黒い",
+    lively: "活発",
+    sunny: "明るい",
+    quiet: "静か",
+    straightforward: "率直",
+    warm: "温かい",
+    calm: "冷静",
+    cool: "クール",
+    artsy: "アーティスティック",
+    "fun-loving": "楽しいのが好き",
+    relaxed: "リラックス",
+    outgoing: "外向的",
+    passionate: "情熱的",
+    elegant: "優雅",
+    creative: "創造的",
+    intense: "激しい",
+    polite: "丁寧",
+    "easy-going": "気さく",
+    tsundere: "ツンデレ",
+    yandere: "ヤンデレ",
+    oneesan: "お姉さん系",
+    aloof: "クールで淡白",
+  },
+  ko: {
+    gentle: "다정한",
+    cute: "귀여운",
+    mature: "성숙한",
+    scheming: "속이 검은",
+    lively: "활발한",
+    sunny: "밝은",
+    quiet: "조용한",
+    straightforward: "솔직한",
+    warm: "따뜻한",
+    calm: "침착한",
+    cool: "쿨한",
+    artsy: "예술적인",
+    "fun-loving": "즐거움을 사랑하는",
+    relaxed: "여유로운",
+    outgoing: "외향적인",
+    passionate: "열정적인",
+    elegant: "우아한",
+    creative: "창의적인",
+    intense: "강렬한",
+    polite: "예의바른",
+    "easy-going": "느긋한",
+    tsundere: "츤데레",
+    yandere: "얀데레",
+    oneesan: "누나 스타일",
+    aloof: "담담한",
+  },
+  pt: {
+    gentle: "gentil",
+    cute: "fofo",
+    mature: "maduro",
+    scheming: "calculista",
+    lively: "animado",
+    sunny: "ensolarado",
+    quiet: "quieto",
+    straightforward: "direto",
+    warm: "caloroso",
+    calm: "calmo",
+    cool: "legal",
+    artsy: "artístico",
+    "fun-loving": "divertido",
+    relaxed: "relaxado",
+    outgoing: "extrovertido",
+    passionate: "apaixonado",
+    elegant: "elegante",
+    creative: "criativo",
+    intense: "intenso",
+    polite: "educado",
+    "easy-going": "descontraído",
+    tsundere: "tsundere",
+    yandere: "yandere",
+    oneesan: "estilo onee-san",
+    aloof: "distante",
+  },
+  es: {
+    gentle: "gentil",
+    cute: "lindo",
+    mature: "maduro",
+    scheming: "calculador",
+    lively: "animado",
+    sunny: "soleado",
+    quiet: "tranquilo",
+    straightforward: "directo",
+    warm: "cálido",
+    calm: "calmado",
+    cool: "genial",
+    artsy: "artístico",
+    "fun-loving": "divertido",
+    relaxed: "relajado",
+    outgoing: "extrovertido",
+    passionate: "apasionado",
+    elegant: "elegante",
+    creative: "creativo",
+    intense: "intenso",
+    polite: "educado",
+    "easy-going": "despreocupado",
+    tsundere: "tsundere",
+    yandere: "yandere",
+    oneesan: "estilo onee-san",
+    aloof: "distante",
+  },
+  id: {
+    gentle: "lembut",
+    cute: "lucu",
+    mature: "dewasa",
+    scheming: "licik",
+    lively: "lincah",
+    sunny: "ceria",
+    quiet: "tenang",
+    straightforward: "blak-blakan",
+    warm: "hangat",
+    calm: "tenang",
+    cool: "keren",
+    artsy: "artistik",
+    "fun-loving": "suka bersenang-senang",
+    relaxed: "santai",
+    outgoing: "ekstrovert",
+    passionate: "penuh gairah",
+    elegant: "anggun",
+    creative: "kreatif",
+    intense: "intens",
+    polite: "sopan",
+    "easy-going": "santai",
+    tsundere: "tsundere",
+    yandere: "yandere",
+    oneesan: "gaya onee-san",
+    aloof: "dingin",
+  },
+};
+
+/** 反向映射：从任意语言的标签展示值查找标准英文 key */
+const reverseMap = {};
+Object.values(personalityTagTranslations).forEach((langMap) => {
+  Object.entries(langMap).forEach(([key, value]) => {
+    reverseMap[value.toLowerCase()] = key;
+  });
+});
+
+/**
+ * 从任意语言的标签文案反查标准英文 key。
+ * @param {string} tag - 标签文案（任意语言）
+ * @returns {string|undefined} 标准 key，未匹配时返回 undefined
+ */
+export function getPersonalityKey(tag) {
+  return reverseMap[tag.trim().toLowerCase()];
+}
+
+/**
+ * 将性格标签翻译为目标界面语言。
+ * @param {string} tag - 原始标签文案
+ * @param {string} lang - 目标语言代码
+ * @returns {string} 翻译后的标签，无法识别时返回去除首尾空格的原文
+ */
+export function translatePersonalityTag(tag, lang) {
+  const normalized = tag.trim().toLowerCase();
+  const key = reverseMap[normalized];
+  if (!key) return tag.trim();
+  return personalityTagTranslations[lang]?.[key] || tag.trim();
+}

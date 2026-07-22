@@ -1,0 +1,11 @@
+{
+  "name": "client-uniii",
+  "version": "0.0.1",
+  "private": true,
+  "main": "main.js",
+  "scripts": {},
+  "dependencies": {
+    "pinia": "^2.3.1",
+    "vue-i18n": "^9.14.4"
+  }
+}

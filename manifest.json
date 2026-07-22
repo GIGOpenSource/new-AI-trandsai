@@ -1,0 +1,56 @@
+{
+    "name" : "AI-Girlfriend",
+    "appid" : "__UNI__859C11F",
+    "description" : "AI 数字伴侣",
+    "versionName" : "0.0.1",
+    "versionCode" : "100",
+    "transformPx" : false,
+    "app-plus" : {
+        "usingComponents" : true,
+        "nvueStyleCompiler" : "uni-app",
+        "splashscreen" : {
+            "alwaysShowBeforeRender" : true,
+            "waiting" : true,
+            "autoclose" : true,
+            "delay" : 0
+        },
+        "modules" : {},
+        "distribute" : {
+            "android" : {
+                "permissions" : [
+                    "<uses-permission android:name=\"android.permission.INTERNET\"/>",
+                    "<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\"/>",
+                    "<uses-permission android:name=\"android.permission.VIBRATE\"/>"
+                ],
+                "minSdkVersion" : 24,
+                "targetSdkVersion" : 34
+            },
+            "ios" : {
+                "dSYMs" : false
+            },
+            "sdkConfigs" : {}
+        },
+        "statusbar" : {
+            "immersed" : "supportedDevice",
+            "style" : "light",
+            "background" : "#0f0f12"
+        }
+    },
+    "h5" : {
+        "title" : "AI-Girlfriend",
+        "router" : {
+            "mode" : "history",
+            "base" : "/"
+        },
+        "devServer" : {
+            "port" : 5173
+        }
+    },
+    "mp-weixin" : {
+        "appid" : "",
+        "setting" : {
+            "urlCheck" : false
+        }
+    },
+    "vueVersion" : "3"
+}

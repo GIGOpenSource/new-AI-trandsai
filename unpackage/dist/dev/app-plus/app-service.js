@@ -5276,7 +5276,7 @@ This will fail in production.`);
     };
     return new Promise((resolve, reject) => {
       uni.uploadFile({
-        url: buildUrl("/api/media/upload"),
+        url: buildUrl("/api/upload/image"),
         filePath,
         name: "file",
         // 后端字段名

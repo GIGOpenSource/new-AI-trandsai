@@ -15,8 +15,10 @@ import { createSSRApp } from "vue";
 import { createPinia } from "pinia";
 import App from "./App.vue";
 import i18n from "./i18n";
+import uviewPlus from "uview-plus";
 import { useChatStore } from "./stores/chat";
 import { useThemeStore } from "./stores/theme";
+import UIcon from "uview-plus/components/u-icon/u-icon.vue";
 
 /**
  * uni-app 约定导出；勿改为默认 export 单例
@@ -27,6 +29,10 @@ export function createApp() {
   const pinia = createPinia();
   app.use(pinia);
   app.use(i18n);
+  app.use(uviewPlus);
+
+  // 手动注册 up-icon 组件（解决 import.meta.glob 在部分环境下无法自动注册的问题）
+  app.component("up-icon", UIcon);
 
   // Pinia 已安装后才能 useXxxStore
   const chat = useChatStore();

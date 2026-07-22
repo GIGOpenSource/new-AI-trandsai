@@ -49,7 +49,7 @@ export function deviceHeaders() {
 }
 
 /**
- * 上传单张本地图片到 `/api/media/upload`
+ * 上传单张本地图片到 `/api/upload/image`
  * @param {string} filePath uni.chooseImage 返回的临时路径
  * @returns {Promise<{ url: string }>}
  */
@@ -61,7 +61,7 @@ export function uploadImage(filePath) {
   };
   return new Promise((resolve, reject) => {
     uni.uploadFile({
-      url: buildUrl("/api/media/upload"),
+      url: buildUrl("/api/upload/image"),
       filePath,
       name: "file", // 后端字段名
       header,

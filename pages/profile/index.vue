@@ -924,16 +924,33 @@ watch(
 }
 
 .theme-switch {
+  width: 100rpx;
+  height: 56rpx;
   border-radius: 999px;
   flex-shrink: 0;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  position: relative;
+  transition: background-color 0.3s ease;
 
-  &.on { color: var(--brand); }
+  &.on {
+    background: var(--brand);
+    border-color: var(--brand);
+  }
 }
 
 .theme-knob {
+  width: 48rpx;
+  height: 48rpx;
   border-radius: 50%;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.2);
+  background: #fff;
+  position: absolute;
+  top: 4rpx;
+  left: 4rpx;
+  transition: transform 0.3s ease;
   .on & {
+    transform: translateX(44rpx);
   }
 }
 

@@ -6,6 +6,7 @@
   "scripts": {},
   "dependencies": {
     "pinia": "^2.3.1",
+    "uview-plus": "^3.8.55",
     "vue-i18n": "^9.14.4"
   }
 }

@@ -206,7 +206,14 @@ const personalities = () => String(profile().personality || "").split(/[、,，]
 const displayName = computed(() =>
   formatCompanionName(profile().name, t("home.defaultCompanionName"))
 );
-const displayMeta = computed(() => formatCompanionMeta(profile(), t));
+const displayMeta = computed(() => {
+  const meta = formatCompanionMeta(profile(), t);
+  const mood = state().mood;
+  if (mood) {
+    return meta ? `${meta} · ${mood}` : mood;
+  }
+  return meta;
+});
 
 const daysTogether = computed(() => {
   const raw = profile().created_at;

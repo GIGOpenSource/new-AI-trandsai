@@ -168,7 +168,7 @@ const onRemoveTap = bindAnalyticsTapArg(
         </view>
         <view class="actions flex-col gap-sm">
           <button class="icon-btn primary" @tap="onChatTap(c.id)">💬</button>
-          <button class="icon-btn" @tap="onRemoveTap(c.id)">➖</button>
+          <button class="icon-btn" @tap="onRemoveTap(c.id)" style="display: flex;align-items: center;justify-content: center;"><up-icon name="trash" color="#fff"></up-icon></button>
         </view>
         </view>
       </template>

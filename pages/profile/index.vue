@@ -132,18 +132,18 @@ const menuItems = computed(() => [
     path: "/pages-sub/intimacy/index",
     requireAuth: true,
   },
-  {
-    icon: "🔔",
-    label: t("profile.notificationSettings"),
-    path: "/pages-sub/settings/index",
-    requireAuth: true,
-  },
-  {
-    icon: "📬",
-    label: t("notifications.title"),
-    path: "/pages-sub/notifications/index",
-    requireAuth: true,
-  },
+  // {
+  //   icon: "🔔",
+  //   label: t("profile.notificationSettings"),
+  //   path: "/pages-sub/settings/index",
+  //   requireAuth: true,
+  // },
+  // {
+  //   icon: "📬",
+  //   label: t("notifications.title"),
+  //   path: "/pages-sub/notifications/index",
+  //   requireAuth: true,
+  // },
   {
     icon: "🌐",
     label: t("profile.languagePreference"),
@@ -157,19 +157,19 @@ const menuItems = computed(() => [
     path: "/pages-sub/privacy/index",
     requireAuth: true,
   },
-  {
-    icon: "💬",
-    label: t("messages.feedback"),
-    path: "/pages-sub/feedback/index",
-    requireAuth: true,
-  },
-  {
-    icon: "ℹ️",
-    label: t("profile.aboutUs"),
-    action: () => {
-      showAbout.value = true;
-    },
-  },
+  // {
+  //   icon: "💬",
+  //   label: t("messages.feedback"),
+  //   path: "/pages-sub/feedback/index",
+  //   requireAuth: true,
+  // },
+  // {
+  //   icon: "ℹ️",
+  //   label: t("profile.aboutUs"),
+  //   action: () => {
+  //     showAbout.value = true;
+  //   },
+  // },
 ]);
 
 const visibleMenuItems = computed(() =>
@@ -359,6 +359,7 @@ function onAvatarTap() {
 function selectLanguage(code) {
   setAppLanguage(code);
   showLangPicker.value = false;
+  uni.reLaunch({ url: "/pages/profile/index" });
 }
 
 function handleLogout() {
@@ -470,6 +471,7 @@ watch(
         <view class="avatar-block">
           <view v-if="avatarSrc" class="profile-avatar-wrap">
             <AppAvatarImage
+              size="lg"
               :src="avatarSrc"
               :seed="`user-${user?.id}`"
               :generating="avatarUploading"
@@ -495,20 +497,21 @@ watch(
             </text>
             <text v-if="user" class="edit-name-btn" @tap="openEditProfile">✎</text>
           </view>
-          <text class="text-muted user-id">
+          <!-- <view class="text-muted user-id">
             {{
               user
                 ? `${t("profile.authorId")}: ${user.id}`
                 : t("profile.pleaseLogin")
             }}
-          </text>
-          <text
+          </view> -->
+          <view
             v-if="user?.sexual_orientation"
             class="text-muted orientation-text"
+            style="margin-top: 30rpx;"
           >
             {{ t("register.sexualOrientation") }}:
             {{ sexualOrientationLabel(user.sexual_orientation) }}
-          </text>
+          </view>
         </view>
         </template>
       </view>
@@ -524,7 +527,7 @@ watch(
           <text class="text-muted stat-label">{{ t("profile.chatTurns") }}</text>
         </view>
         <view class="stat-card">
-          <text class="stat-value">{{ stats.days_together }}天</text>
+          <text class="stat-value">{{ stats.days_together }}</text>
           <text class="text-muted stat-label">{{ t("profile.daysTogether") }}</text>
         </view>
       </view>
@@ -668,8 +671,8 @@ watch(
           :disabled="editLoading || !editNickname.trim() || !editAge.trim()"
           @tap="saveProfile"
         >
-          <text v-if="editLoading">{{ t("common.loading") }}</text>
-          <text v-else>✓ {{ t("common.save") }}</text>
+          <!-- <text v-if="editLoading">{{ t("common.loading") }}</text> -->
+          <text>{{ t("common.save") }}</text>
         </button>
       </view>
     </view>
@@ -735,14 +738,13 @@ watch(
 <style scoped lang="scss">
 
 .user-row { display: flex; gap: 24rpx; }
-.avatar-placeholder { display: flex; width: 128rpx; height: 128rpx; background: var(--bg-input); }
-.avatar-edit-btn { position: absolute; right: 0; bottom: 0; width: 48rpx; height: 48rpx; display: flex; background: var(--bg-card); border: 1px solid var(--border); }
+.avatar-placeholder { display: flex; width: 160rpx; height: 160rpx; background: var(--bg-input); }
+.avatar-edit-btn { position: absolute; right: -4rpx; bottom: -4rpx; width: 44rpx; height: 44rpx; display: flex; background: var(--bg-card); border: 2px solid var(--bg); }
 .name-row { display: flex; gap: 12rpx; }
 .stats-grid { display: grid; gap: 16rpx; }
-.stat-card { background: var(--bg-card); border: 1px solid var(--border); padding: 24rpx 8rpx; }
+.stat-card { background: var(--bg-card); border: 1px solid var(--border); padding: 24rpx 8rpx;display: flex;flex-direction: column; }
 .menu-list {
   display: flex;
-  flex-direction: column;
   gap: 16rpx;
 }
 .menu-item { display: flex; padding: 28rpx 24rpx; background: var(--bg-card); border: 1px solid var(--border); }
@@ -1079,11 +1081,12 @@ watch(
   display: flex;
   width: 100%;
   margin: 16rpx 0 0;
-  padding: 24rpx 32rpx;
+  padding: 10rpx 32rpx;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   box-sizing: border-box;
+  border-radius: 40rpx;
 }
 
 .save-btn[disabled] {

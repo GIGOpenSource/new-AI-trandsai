@@ -34,6 +34,8 @@
     "noAccount": "还没有账号？",
     "subtitle": "与你的虚拟恋人重逢",
     "errorEmpty": "请输入邮箱和密码",
+	"errorEmailEmpty": "请输入邮箱",
+	"errorPwdEmpty": "请输入密码",
     "errorFailed": "登录失败",
     "loggingIn": "登录中..."
   },

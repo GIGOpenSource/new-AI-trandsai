@@ -791,6 +791,13 @@ onShow(() => {
                 {{ comment.content }}
               </text>
             </view>
+            <text
+              v-if="(m.comments_count || 0) > (m.comments || []).length"
+              class="view-all-hint"
+              @tap.stop="onMomentDetailTap(m.id)"
+            >
+              {{ t("home.viewAllComments", { count: m.comments_count }) }}
+            </text>
           </view>
 
           <!-- 评论输入（uni-input 清空 :value 不刷新 DOM，靠 :key remount） -->
@@ -1093,6 +1100,14 @@ onShow(() => {
   border-radius: 16rpx;
   padding: 16rpx 20rpx;
   margin-bottom: 16rpx;
+}
+.view-all-hint {
+  display: block;
+  font-size: 24rpx;
+  color: var(--brand);
+  margin-top: 8rpx;
+  padding-top: 8rpx;
+  border-top: 1rpx solid var(--border);
 }
 .comment-line {
   font-size: 24rpx;

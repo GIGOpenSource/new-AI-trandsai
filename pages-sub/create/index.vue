@@ -118,6 +118,13 @@ const mbtiPickerIndex = computed(() => {
   return idx >= 0 ? idx : 0;
 });
 
+const orientationOptions = computed(() =>
+  ORIENTATIONS.map((o) => ({
+    value: o,
+    label: t(`register.${o}`),
+  }))
+);
+
 const orientationPickerIndex = computed(() => {
   const idx = ORIENTATIONS.indexOf(sexualOrientation.value);
   return idx >= 0 ? idx : 0;
@@ -476,7 +483,7 @@ function onAgeChange(e) {
           </text>
           <slider
             :min="18"
-            :max="35"
+            :max="75"
             :value="age"
             active-color="#ec4899"
             background-color="var(--border)"
@@ -485,7 +492,7 @@ function onAgeChange(e) {
           />
           <view class="range-hints">
             <text class="text-muted">18</text>
-            <text class="text-muted">35</text>
+            <text class="text-muted">75</text>
           </view>
           <text v-if="errors.age" class="error-text">{{ errors.age }}</text>
         </view>
@@ -521,7 +528,7 @@ function onAgeChange(e) {
           </text>
           <picker
             mode="selector"
-            :range="ORIENTATIONS"
+            :range="orientationOptions.map((o) => o.label)"
             :value="orientationPickerIndex"
             @change="onOrientationChange"
           >

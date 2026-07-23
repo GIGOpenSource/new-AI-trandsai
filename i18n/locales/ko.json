@@ -82,6 +82,7 @@
     "create": "만들기",
     "noMoments": "아직 게시물이 없습니다. trandsai와 대화필보세요 ~",
     "writeComment": "댓글 작성...",
+    "viewAllComments": "댓글 {count}개 모두 보기",
     "noMoreMoments": "— 더 이상 없음 —",
     "backToTop": "맨 위로",
     "replyTo": "{name}님에게 답글",

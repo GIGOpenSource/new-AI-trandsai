@@ -82,6 +82,7 @@
     "create": "Criar",
     "noMoments": "Ainda não há momentos. Vá conversar com seu trandsai ~",
     "writeComment": "Escrever comentário...",
+    "viewAllComments": "Ver todos os {count} comentários",
     "noMoreMoments": "— Fim —",
     "backToTop": "Voltar ao topo",
     "replyTo": "Responder a {name}",

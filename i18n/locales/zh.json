@@ -84,6 +84,7 @@
     "create": "创建",
     "noMoments": "还没有动态，快去和 trandsai 聊天吧 ~",
     "writeComment": "写评论...",
+    "viewAllComments": "查看全部 {count} 条评论",
     "noMoreMoments": "— 没有更多了 —",
     "backToTop": "返回顶部",
     "momentFilter": "筛选 Moments",

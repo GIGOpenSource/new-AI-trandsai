@@ -82,6 +82,7 @@
     "create": "Buat",
     "noMoments": "Belum ada momen. Ayo ngobrol dengan trandsai ~",
     "writeComment": "Tulis komentar...",
+    "viewAllComments": "Lihat semua {count} komentar",
     "noMoreMoments": "— Selesai —",
     "backToTop": "Kembali ke atas",
     "replyTo": "Balas {name}",

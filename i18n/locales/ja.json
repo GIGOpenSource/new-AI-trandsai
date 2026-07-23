@@ -82,6 +82,7 @@
     "create": "作成",
     "noMoments": "まだ投稿がありません。trandsaiとお話ししましょう ~",
     "writeComment": "コメントを書く...",
+    "viewAllComments": "{count}件のコメントをすべて見る",
     "noMoreMoments": "— これ以上ありません —",
     "backToTop": "トップへ戻る",
     "replyTo": "{name} に返信",

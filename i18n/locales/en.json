@@ -82,6 +82,7 @@
     "create": "Create",
     "noMoments": "No moments yet. Go chat with your trandsai ~",
     "writeComment": "Write a comment...",
+    "viewAllComments": "View all {count} comments",
     "noMoreMoments": "— No more —",
     "backToTop": "Back to top",
     "momentFilter": "Filter moments",

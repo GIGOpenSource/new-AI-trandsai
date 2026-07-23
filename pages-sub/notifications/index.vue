@@ -58,95 +58,111 @@ const tabs = computed(() => [
 
 function buildFromMoments(moments) {
   const lastViewed = getItem("moments_last_viewed");
-  const viewedReplies = readViewedReplyIds();
-  return [
-    ...buildMomentPostItems(moments, lastViewed, t),
-    ...buildMomentReplyItems(moments, viewedReplies, t),
-  ];
+  return buildMomentPostItems(moments, lastViewed, t);
 }
 
-function hydrateFromHomeCache() {
-  const cached = readHomeMomentsCache();
-  if (!cached?.length) return false;
-  const list = buildFromMoments(cached);
-  list.sort((a, b) => new Date(b.time || 0).getTime() - new Date(a.time || 0).getTime());
-  notifications.value = list;
-  return true;
+/** 加载朋友圈（支持分页） */
+async function loadMomentsPage(offset = 0) {
+  const mq = new URLSearchParams({
+    limit: String(PAGE_SIZE),
+    offset: String(offset),
+    lang: locale.value || "zh",
+  });
+
+  const momentsRes = await apiFetch(
+    `/api/moments?${mq.toString()}`,
+    { header: deviceHeaders() }
+  );
+
+  const newMoments = momentsRes?.moments || [];
+  const total = momentsRes?.total || 0;
+  const nextOffset = offset + newMoments.length;
+  momentsOffset = nextOffset;
+  hasMore.value = nextOffset < total;
+
+  // 直接用 API 数据构建，不混入首页缓存
+  const items = buildFromMoments(newMoments);
+  return { items, total };
 }
 
-hydrateFromHomeCache();
-const loading = ref(!notifications.value.length);
-
-async function safeFetch(label, fn) {
+/** 加载系统通知（仅首次） */
+async function loadSystemNotifs() {
   try {
-    return await fn();
+    const viewedKey = `sys_notifications_viewed_${locale.value}`;
+    const viewedIds = parseStoredIdList(getItem(viewedKey));
+
+    const sysRes = await apiFetch(
+      `/api/notifications?language=${locale.value}&limit=20`
+    );
+
+    systemNotifs.value = (sysRes?.notifications || []).map((n) => ({
+      id: `sys-${n.id}`,
+      type: "system",
+      title: n.title,
+      content: n.content,
+      time: n.created_at,
+      read: viewedIds.includes(String(n.id)),
+    }));
+
+    if (sysRes?.notifications?.length) {
+      setItem(
+        viewedKey,
+        JSON.stringify(sysRes.notifications.map((n) => n.id))
+      );
+    }
   } catch (e) {
-    console.error(`加载${label}失败:`, e);
-    return null;
+    console.error("加载系统通知失败:", e);
   }
 }
 
-async function loadNotifications(silent = false) {
-  if (!silent && !notifications.value.length) loading.value = true;
+/** 首次加载 */
+async function loadInitialNotifications() {
+  loading.value = true;
   try {
-    const [momentsRes, sysRes] = await Promise.all([
-      safeFetch("朋友圈", () =>
-        apiFetch(`/api/moments?limit=20&lang=${encodeURIComponent(locale.value || "zh")}`, {
-          header: deviceHeaders(),
-        })
-      ),
-      safeFetch("系统通知", () =>
-        apiFetch(`/api/notifications?language=${locale.value}&limit=20`)
-      ),
+    const [{ items }] = await Promise.all([
+      loadMomentsPage(0),
+      loadSystemNotifs(),
     ]);
-
-    const moments = mergeMomentsComments(
-      momentsRes?.moments || [],
-      readHomeMomentsCache() || []
-    );
-    const list = [...buildFromMoments(moments)];
-
-    const viewedKey = `sys_notifications_viewed_${locale.value}`;
-    let viewedIds = parseStoredIdList(getItem(viewedKey));
-
-    for (const n of sysRes?.notifications || []) {
-      list.push({
-        id: `sys-${n.id}`,
-        type: "system",
-        title: n.title,
-        content: n.content,
-        time: n.created_at,
-        read: viewedIds.includes(String(n.id)),
-      });
-    }
-
-    list.sort((a, b) => new Date(b.time || 0).getTime() - new Date(a.time || 0).getTime());
-
+    momentItems.value = items;
     setItem("moments_last_viewed", new Date().toISOString());
-    const replyIds = list.filter((n) => n.replyId).map((n) => n.replyId);
-    if (replyIds.length) {
-      writeViewedReplyIds([...readViewedReplyIds(), ...replyIds]);
-    }
-    if (sysRes?.notifications) {
-      setItem(
-        viewedKey,
-        JSON.stringify((sysRes.notifications || []).map((n) => n.id))
-      );
-    }
-
-    notifications.value = list.map((n) => ({ ...n, read: true }));
   } finally {
     loading.value = false;
   }
 }
 
-onMounted(() => loadNotifications(!!notifications.value.length));
+onMounted(() => loadInitialNotifications());
+
+/** 触底加载更多 */
+async function loadMore() {
+  if (loadingMore.value || !hasMore.value || loading.value) return;
+  loadingMore.value = true;
+  try {
+    const { items } = await loadMomentsPage(momentsOffset);
+    if (items.length) {
+      // 直接 push 到 momentItems，computed 的 notifications 自动更新
+      momentItems.value = [...momentItems.value, ...items];
+    }
+  } catch (e) {
+    console.error("加载更多失败:", e);
+  } finally {
+    loadingMore.value = false;
+  }
+}
 
 function handleClick(item) {
   if (item.type === "moment" && item.momentId) {
     uni.navigateTo({ url: `/pages-sub/moment/index?id=${item.momentId}` });
   }
 }
+
+/* 用首页缓存做初始占位，不参与 loadMore 逻辑 */
+function hydrateFromCache() {
+  const cached = readHomeMomentsCache();
+  if (!cached?.length) return;
+  const items = buildFromMoments(cached);
+  momentItems.value = items;
+}
+hydrateFromCache();
 </script>
 
 <template>
@@ -156,47 +172,95 @@ function handleClick(item) {
     back-analytics-id="notifications-back"
     back-analytics-name="通知页返回"
   >
-    <view class="tabs flex-row px-md">
-      <text
-        v-for="tab in tabs"
-        :key="tab[0]"
-        :class="{ active: filter === tab[0] }"
-        @tap="filter = tab[0]"
-      >{{ tab[1] }}</text>
-    </view>
-
-    <view class="list-region">
-      <AppListSkeleton v-if="loading && !notifications.length" />
-      <view v-else-if="!filtered.length" class="center text-muted py-lg">{{ t("notifications.empty") }}</view>
-      <view v-else>
+    <view class="notif-body">
+      <!-- tabs 在 scroll-view 外面，flex-shrink:0 自然固定 -->
+      <view class="tabs">
         <view
-          v-for="item in filtered"
-          :key="item.id"
-          class="notif-row"
-          :class="{ unread: !item.read }"
-          @tap="handleClick(item)"
-        >
-          <AppAvatarImage v-if="item.avatar" :src="item.avatar" :seed="item.companionId || item.id" size="sm" />
-          <view v-else class="icon-wrap">{{ item.type === "moment" ? "📷" : "ℹ️" }}</view>
-          <view class="flex-1">
-            <view class="flex-row justify-between">
-              <text class="title">{{ item.title }}</text>
-              <text class="text-muted time">{{ formatTime(item.time) }}</text>
+          v-for="tab in tabs"
+          :key="tab[0]"
+          class="tab-item"
+          :class="{ active: filter === tab[0] }"
+          @tap="filter = tab[0]"
+        >{{ tab[1] }}</view>
+      </view>
+
+      <!-- scroll-view 填满剩余高度 -->
+      <scroll-view
+        scroll-y
+        class="list-scroll"
+        :lower-threshold="150"
+        @scrolltolower="loadMore"
+      >
+        <AppListSkeleton v-if="loading && !notifications.length" />
+        <view v-else-if="!filtered.length" class="center text-muted py-lg">
+          {{ t("notifications.empty") }}
+        </view>
+        <view v-else>
+          <view
+            v-for="item in filtered"
+            :key="item.id"
+            class="notif-row"
+            :class="{ unread: !item.read }"
+            @tap="handleClick(item)"
+          >
+            <AppAvatarImage v-if="item.avatar" :src="item.avatar" :seed="item.companionId || item.id" size="sm" />
+            <view v-else class="icon-wrap">{{ item.type === "moment" ? "📷" : "ℹ️" }}</view>
+            <view class="flex-1">
+              <view class="flex-row justify-between">
+                <text class="title">{{ item.title }}</text>
+                <text class="text-muted time">{{ formatTime(item.time) }}</text>
+              </view>
+              <text class="text-muted snippet">{{ item.content }}</text>
+              <AppMomentImage v-if="item.imageUrl" :src="item.imageUrl" mode="aspectFill" img-class="notif-moment-img" />
             </view>
-            <text class="text-muted snippet">{{ item.content }}</text>
-            <AppMomentImage v-if="item.imageUrl" :src="item.imageUrl" img-class="thumb" />
+          </view>
+
+          <view class="footer-hint">
+            <text v-if="loadingMore" class="text-muted">{{ t("common.loading") }}</text>
+            <text v-else-if="!hasMore && notifications.length" class="text-muted no-more">
+              {{ t("home.noMoreMoments") }}
+            </text>
           </view>
         </view>
-      </view>
+      </scroll-view>
     </view>
   </AppPageShell>
 </template>
 
 <style scoped lang="scss">
-.tabs text {
-  flex: 1; text-align: center; padding: 20rpx 8rpx; color: var(--fg-muted); font-size: 24rpx;
-  &.active { color: var(--brand); border-bottom: 2px solid var(--brand); }
+/* flex 列：tabs 固定 + scroll-view 填满 */
+.notif-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
+
+.tabs {
+  flex-shrink: 0;
+  display: flex;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32rpx;
+}
+.tab-item {
+  flex: 1;
+  text-align: center;
+  padding: 20rpx 8rpx;
+  color: var(--fg-muted);
+  font-size: 24rpx;
+  &.active {
+    color: var(--brand);
+    border-bottom: 2px solid var(--brand);
+  }
+}
+
+/* scroll-view 占据剩余高度 */
+.list-scroll {
+  flex: 1;
+  min-height: 0;
+}
+
 .center { text-align: center; padding: 80rpx 0; }
 .notif-row {
   display: flex; gap: 16rpx; padding: 24rpx 32rpx; border-bottom: 1px solid var(--border);
@@ -206,7 +270,21 @@ function handleClick(item) {
 .title { font-weight: 500; font-size: 28rpx; }
 .time { font-size: 22rpx; }
 .snippet { display: block; font-size: 26rpx; margin-top: 8rpx; overflow: hidden; max-height: 80rpx; }
-.thumb { width: 128rpx; height: 128rpx; border-radius: 12rpx; margin-top: 12rpx; }
+
+.notif-moment-img {
+  width: 100%;
+  max-height: 360rpx;
+  border-radius: 16rpx;
+  margin-top: 12rpx;
+  overflow: hidden;
+}
+
+.footer-hint {
+  padding: 32rpx 0;
+  text-align: center;
+  .no-more { font-size: 24rpx; opacity: 0.6; }
+}
+
 .flex-1 { flex: 1; min-width: 0; }
 .py-lg { padding: 80rpx 0; }
 </style>

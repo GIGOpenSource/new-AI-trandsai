@@ -427,8 +427,9 @@ onMounted(() => {
 
 <template>
   <AppPageShell :show-header="false" show-tab-bar>
+    <!-- 发现页根容器：头部固定 + 内容可滚动 -->
     <view class="discover-page">
-      <!-- Header -->
+      <!-- 顶部：标题、发帖按钮、Tab 切换、搜索、分类筛选 -->
       <view class="discover-header">
         <view class="flex-row justify-between items-center header-top">
           <text class="page-title">{{ t("discover.title") }}</text>
@@ -507,7 +508,7 @@ onMounted(() => {
         </template>
       </view>
 
-      <!-- Scrollable content -->
+      <!-- 可滚动内容区：支持下拉刷新、触底加载 -->
       <scroll-view
         scroll-y
         class="discover-body"
@@ -520,7 +521,7 @@ onMounted(() => {
         @scrolltolower="onScrollToLower"
         :lower-threshold="240"
       >
-        <!-- Posts tab -->
+        <!-- 帖子 Tab -->
         <view v-if="activeTab === 'posts'" class="content px-md py-sm">
           <AppListSkeleton v-if="(isSearchLoading || loading) && !displayPosts.length" :rows="4" />
 
@@ -595,7 +596,7 @@ onMounted(() => {
           </view>
         </view>
 
-        <!-- Companions tab -->
+        <!-- 伴侣 Tab -->
         <view v-else class="content px-md py-sm">
           <AppListSkeleton v-if="companionsLoading && !displayCompanions.length" :rows="4" />
 
@@ -655,7 +656,7 @@ onMounted(() => {
       </scroll-view>
     </view>
 
-    <!-- Create post modal -->
+    <!-- 发帖弹窗：分类 / 标题 / 正文 / 图片 -->
     <view v-if="showCreate" class="modal-mask" @tap="closeCreateModal">
       <view class="modal-sheet" @tap.stop>
         <view class="modal-header flex-row justify-between items-center">
@@ -747,19 +748,27 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
-
+/* ===== 页面骨架 ===== */
 .discover-page { flex: 1; min-height: 0; height: 100%; background: var(--bg); }
 .discover-header { padding: calc(env(safe-area-inset-top) + 16rpx) 32rpx 16rpx; background: var(--bg); }
 .discover-body { flex: 1; height: 0; min-height: 0; }
+
+/* ===== 顶部操作区 ===== */
 .btn-new-post { padding: 12rpx 28rpx; background: linear-gradient(90deg, var(--brand), var(--brand-end)); color: #fff; }
 .tab-switch { display: flex; gap: 8rpx; padding: 8rpx; background: var(--bg-input); }
 .tab-switch-item { flex: 1; padding: 16rpx 0; color: var(--fg-muted); &.active { background: var(--bg-card); color: var(--fg); } }
 .search-wrap { display: flex; align-items: center; gap: 12rpx; padding: 16rpx 24rpx; background: var(--bg-input); }
 .search-input { flex: 1; color: var(--fg); height: auto !important; min-height: 56rpx; line-height: 1.4; overflow: visible; }
+
+/* ===== 分类标签 ===== */
 .category-chip { display: inline-block; padding: 12rpx 28rpx; margin-right: 12rpx; background: var(--bg-input); border: 1px solid var(--border); color: var(--fg-muted); &.active { background: linear-gradient(90deg, var(--brand), var(--brand-end)); color: #fff; } }
+
+/* ===== 卡片列表 ===== */
 .post-card, .companion-card { padding: 32rpx; border-bottom: 1px solid var(--border); }
 .chat-btn { padding: 12rpx 28rpx; border-radius: 999px; background: linear-gradient(90deg, var(--brand), var(--brand-end)); color: #fff; }
-.modal-sheet { width: 100%; max-width: 672px; background: var(--bg-card); padding: 32rpx; padding-bottom: calc(var(--safe-tab) + 32rpx); }
+
+/* ===== 发帖弹窗 ===== */
+.modal-sheet { width: 100%; max-width: 672px; background: var(--bg-card); }
 
 .discover-page {
   display: flex;
@@ -1001,6 +1010,7 @@ onMounted(() => {
   min-width: 0;
 }
 
+/* ===== 发帖弹窗 ===== */
 .modal-mask {
   position: fixed;
   inset: 0;
@@ -1013,12 +1023,15 @@ onMounted(() => {
 
 .modal-sheet {
   display: flex;
-  max-height: 90vh;
-  border-radius: 32rpx 32rpx 0 0;
   flex-direction: column;
+  max-height: 90vh;
+  padding-bottom: calc(var(--safe-tab) + 16rpx);
+  border-radius: 32rpx 32rpx 0 0;
 }
 
 .modal-header {
+  flex-shrink: 0;
+  padding: 32rpx 32rpx 24rpx;
   border-bottom: 1px solid var(--border);
 }
 
@@ -1029,10 +1042,14 @@ onMounted(() => {
 
 .modal-close {
   font-size: 36rpx;
+  padding: 8rpx;
 }
 
+/* 可滚动表单区 */
 .modal-body {
-  max-height: 60vh;
+  flex: 1;
+  min-height: 0;
+  padding: 24rpx 32rpx;
 }
 
 .form-group {
@@ -1040,12 +1057,32 @@ onMounted(() => {
 }
 
 .form-label {
+  display: block;
   font-size: 28rpx;
+  font-weight: 500;
   margin-bottom: 16rpx;
 }
 
+/* 分类芯片：flex 换行，避免叠在一起 */
 .chip-wrap {
+  display: flex;
   flex-wrap: wrap;
+  gap: 16rpx;
+}
+.chip-wrap .category-chip {
+  margin-right: 0;
+}
+
+/* 输入框 */
+.input-field {
+  width: 100%;
+  padding: 20rpx 24rpx;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  color: var(--fg);
+  box-sizing: border-box;
 }
 
 .textarea {
@@ -1053,36 +1090,59 @@ onMounted(() => {
 }
 
 .char-count {
+  display: block;
   text-align: right;
   font-size: 22rpx;
   margin-top: 8rpx;
 }
 
+/* 图片上传网格 */
 .upload-grid {
+  display: flex;
   flex-wrap: wrap;
+  gap: 16rpx;
 }
 
 .upload-thumb {
-  border-radius: 20rpx;
+  position: relative;
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 16rpx;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
 .upload-img {
+  width: 100%;
+  height: 100%;
 }
 
 .remove-btn {
+  position: absolute;
+  top: -8rpx;
+  right: -8rpx;
+  width: 40rpx;
+  height: 40rpx;
   display: flex;
-  border-radius: 50%;
   align-items: center;
   justify-content: center;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  border-radius: 50%;
   font-size: 22rpx;
 }
 
 .upload-add {
   display: flex;
-  border-radius: 20rpx;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  width: 160rpx;
+  height: 160rpx;
+  border: 2rpx dashed var(--border);
+  border-radius: 16rpx;
+  background: var(--bg-input);
+  flex-shrink: 0;
 }
 
 .add-icon {
@@ -1094,11 +1154,16 @@ onMounted(() => {
   font-size: 22rpx;
 }
 
+/* 底部操作 */
 .modal-footer {
+  flex-shrink: 0;
+  padding: 24rpx 32rpx 32rpx;
   border-top: 1px solid var(--border);
 }
 
 .publish-btn {
   border-radius: 999px;
+  padding: 24rpx;
+  font-size: 30rpx;
 }
 </style>

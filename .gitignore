@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Build output
+unpackage/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE settings
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Certificates and credentials
+apk/
+ios/
+
+# npm logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Cache
+.cache/
+.temp/
+
+# Editor directories and files
+*.bak
+*.tmp

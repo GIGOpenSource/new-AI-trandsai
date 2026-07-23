@@ -95,7 +95,7 @@ function goRegister() {
       </view>
 
       <button
-        class="btn-primary w-full mt-md"
+        class="login-btn w-full mt-md"
         :disabled="loading"
         @tap="bindAnalyticsTap('login-submit', handleLogin, '登录')"
       >
@@ -145,4 +145,17 @@ function goRegister() {
   color: var(--fg-muted);
 }
 .register-link { text-align: center; font-size: 26rpx; margin-top: 48rpx; }
+.login-btn {
+  width: 100%;
+  height: 90rpx;
+  border-radius: 40rpx;
+  background: linear-gradient(90deg, var(--brand), var(--brand-end));
+  color: #fff;
+  font-size: 32rpx;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+}
 </style>

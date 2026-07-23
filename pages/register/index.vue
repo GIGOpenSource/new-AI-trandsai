@@ -160,7 +160,7 @@ function goLogin() {
           <view class="input-field mt-md">{{ t(`register.${sexualOrientation}`) }}</view>
         </picker>
 
-        <button class="btn-primary w-full mt-md" :disabled="loading" @tap="bindAnalyticsTap('register-submit', handleRegister, '注册')">
+        <button class="register-btn w-full mt-md" :disabled="loading" @tap="bindAnalyticsTap('register-submit', handleRegister, '注册')">
           {{ loading ? t("register.registering") : t("register.registerBtn") }}
         </button>
 
@@ -205,8 +205,35 @@ function goLogin() {
 }
 .label { display: block; color: var(--fg-muted); font-size: 26rpx; }
 .pill-btn {
-  flex: 1; padding: 24rpx; border-radius: 24rpx; background: var(--bg-input); color: var(--fg); border: 1px solid var(--border); font-size: 28rpx;
-  &.active { background: linear-gradient(90deg, var(--brand), var(--brand-end)); color: #fff; border: none; }
+  flex: 1;
+  height: 90rpx;
+  border-radius: 40rpx;
+  background: var(--bg-input);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  font-size: 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.active {
+    background: linear-gradient(90deg, var(--brand), var(--brand-end));
+    color: #fff;
+    border: none;
+  }
+}
+.register-btn {
+  width: 100%;
+  height: 90rpx;
+  border-radius: 40rpx;
+  background: linear-gradient(90deg, var(--brand), var(--brand-end));
+  color: #fff;
+  font-size: 32rpx;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
 }
 .agree, .login-link { text-align: center; font-size: 24rpx; }
 </style>

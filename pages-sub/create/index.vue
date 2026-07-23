@@ -1014,7 +1014,7 @@ function onAgeChange(e) {
 .submit-btn {
   width: 100%;
   height: 90rpx;
-  border-radius: 14rpx !important;
+  border-radius: 34rpx !important;
   margin: 0 0 16rpx;
   padding: 0;
   box-sizing: border-box;

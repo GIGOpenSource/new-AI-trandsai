@@ -165,7 +165,7 @@ watch(
 function prefillFromClone(raw) {
   try {
     const data = JSON.parse(raw);
-    if (data.name) name.value = data.name;
+    if (data.name) name.value = data.name.length > 20 ? data.name.slice(0, 20) : data.name;
     if (data.age) age.value = data.age;
     if (data.gender) gender.value = data.gender;
     if (data.city) city.value = data.city;
@@ -264,7 +264,7 @@ async function handleAutoFill() {
     }
 
     // Step 3: 两个接口都完成后，一次性填充所有字段
-    name.value = finalName;
+    name.value = finalName.length > 20 ? finalName.slice(0, 20) : finalName;
     age.value = finalAge;
     gender.value = finalGender;
     sexualOrientation.value = finalOrientation;
@@ -341,6 +341,7 @@ function validateForm() {
   const personalityStr = selectedPersonalities.value.join("、");
 
   if (!name.value.trim()) newErrors.name = t("createCompanion.errors.nameRequired");
+  if (name.value.length > 20) newErrors.name = "名字最多20个字符";
   if (!age.value && age.value !== 0) newErrors.age = t("createCompanion.errors.ageRequired");
   if (!gender.value) newErrors.gender = t("createCompanion.errors.genderRequired");
   if (!city.value.trim()) newErrors.city = t("createCompanion.errors.cityRequired");
@@ -465,12 +466,14 @@ function onAgeChange(e) {
           <text class="label">
             {{ t("createCompanion.name") }}
             <text class="required">*</text>
+            <text class="char-count" :class="{ over: name.length > 20 }">{{ name.length }}/20</text>
           </text>
           <input
             :value="name"
             class="input-field"
             :class="{ 'input-error': errors.name }"
             :placeholder="t('createCompanion.namePlaceholder')"
+            :maxlength="20"
               @input="name = $event.detail.value"
           />
           <text v-if="errors.name" class="error-text">{{ errors.name }}</text>
@@ -795,7 +798,8 @@ function onAgeChange(e) {
 }
 
 .label {
-  display: block;
+  display: flex;
+  align-items: center;
   font-size: 28rpx;
   color: var(--fg);
   margin-bottom: 16rpx;
@@ -805,6 +809,17 @@ function onAgeChange(e) {
 .required {
   color: #ef4444;
   margin-left: 4rpx;
+}
+
+.char-count {
+  font-size: 22rpx;
+  color: var(--fg-muted);
+  margin-left: auto;
+  font-weight: 400;
+}
+
+.char-count.over {
+  color: #ef4444;
 }
 
 .input-error {
@@ -998,8 +1013,17 @@ function onAgeChange(e) {
 
 .submit-btn {
   width: 100%;
+  height: 90rpx;
+  border-radius: 34rpx !important;
   margin: 0 0 16rpx;
+  padding: 0;
   box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30rpx;
+  font-weight: 500;
+  line-height: 1;
 }
 
 .autofill-btn {

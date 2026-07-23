@@ -685,24 +685,28 @@ onMounted(() => {
 
           <view class="form-group">
             <text class="form-label">{{ t("discover.postTitle") }}</text>
-            <input
-              :value="newTitle"
-              class="input-field"
-              :placeholder="t('discover.titlePlaceholder')"
-              maxlength="200"
-              @input="newTitle = $event.detail.value"
-            />
+            <view class="input-box">
+              <input
+                :value="newTitle"
+                class="input-field"
+                :placeholder="t('discover.titlePlaceholder')"
+                maxlength="200"
+                @input="newTitle = $event.detail.value"
+              />
+            </view>
           </view>
 
           <view class="form-group">
             <text class="form-label">{{ t("discover.postContent") }}</text>
-            <textarea
-              :value="newContent"
-              class="input-field textarea"
-              :placeholder="t('discover.contentPlaceholder')"
-              maxlength="5000"
-              @input="newContent = $event.detail.value"
-            />
+            <view class="input-box">
+              <textarea
+                :value="newContent"
+                class="input-field textarea"
+                :placeholder="t('discover.contentPlaceholder')"
+                maxlength="5000"
+                @input="newContent = $event.detail.value"
+              />
+            </view>
             <text class="char-count text-muted">{{ newContent.length }}/5000</text>
           </view>
 
@@ -768,7 +772,7 @@ onMounted(() => {
 .category-chip { display: inline-block; padding: 12rpx 28rpx; margin-right: 12rpx; background: var(--bg-input); border: 1px solid var(--border); color: var(--fg-muted); &.active { background: linear-gradient(90deg, var(--brand), var(--brand-end)); color: #fff; } }
 
 /* ===== 卡片列表 ===== */
-.post-card, .companion-card { padding: 32rpx; border-bottom: 1px solid var(--border); }
+.post-card, .companion-card { padding: 32rpx; }
 .chat-btn { padding: 12rpx 28rpx; border-radius: 999px; background: linear-gradient(90deg, var(--brand), var(--brand-end)); color: #fff; }
 
 /* ===== 发帖弹窗 ===== */
@@ -862,9 +866,15 @@ onMounted(() => {
 .companion-list {
   display: flex;
   flex-direction: column;
+  gap: 16rpx;
+  padding: 16rpx 0;
 }
 
 .post-card {
+  margin-bottom: 24rpx;
+  background: var(--bg-card);
+  border-radius: 24rpx;
+  border: 1px solid var(--border);
 }
 
 .post-author {
@@ -932,7 +942,8 @@ onMounted(() => {
 }
 
 .action-btn {
-  font-size: 26rpx;
+  font-size: 32rpx;
+  padding: 12rpx 16rpx;
 }
 
 .liked {
@@ -953,6 +964,10 @@ onMounted(() => {
 }
 
 .companion-card {
+  margin-bottom: 24rpx;
+  background: var(--bg-card);
+  border-radius: 24rpx;
+  border: 1px solid var(--border);
 }
 
 .companion-name-block {
@@ -1037,6 +1052,8 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   max-height: 90vh;
+  width: 100%;
+  overflow: hidden;
   padding-bottom: calc(var(--safe-tab) + 16rpx);
   border-radius: 32rpx 32rpx 0 0;
 }
@@ -1061,11 +1078,16 @@ onMounted(() => {
 .modal-body {
   flex: 1;
   min-height: 0;
+  width: 100%;
+  overflow: hidden;
   padding: 24rpx 32rpx;
+  box-sizing: border-box;
 }
 
 .form-group {
   margin-bottom: 32rpx;
+  width: 100%;
+  overflow: hidden;
 }
 
 .form-label {
@@ -1086,8 +1108,14 @@ onMounted(() => {
 }
 
 /* 输入框 */
+.input-box {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 16rpx;
+}
 .input-field {
   width: 100%;
+  max-width: 100%;
   padding: 20rpx 24rpx;
   background: var(--bg-input);
   border: 1px solid var(--border);
@@ -1096,7 +1124,6 @@ onMounted(() => {
   color: var(--fg);
   box-sizing: border-box;
 }
-
 .textarea {
   min-height: 240rpx;
 }
@@ -1117,8 +1144,8 @@ onMounted(() => {
 
 .upload-thumb {
   position: relative;
-  width: 160rpx;
-  height: 160rpx;
+  width: 240rpx;
+  height: 240rpx;
   border-radius: 16rpx;
   overflow: hidden;
   flex-shrink: 0;
@@ -1131,17 +1158,18 @@ onMounted(() => {
 
 .remove-btn {
   position: absolute;
-  top: -8rpx;
-  right: -8rpx;
-  width: 40rpx;
-  height: 40rpx;
+  top: 8rpx;
+  right: 8rpx;
+  width: 44rpx;
+  height: 44rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0,0,0,0.6);
-  color: #fff;
+  background: rgba(0, 0, 0, 0.5);
   border-radius: 50%;
-  font-size: 22rpx;
+  color: #fff;
+  font-size: 28rpx;
+  z-index: 2;
 }
 
 .upload-add {

@@ -120,12 +120,10 @@ function connectBackgroundWs(all) {
 /** 拉取会话列表并建立后台 WebSocket */
 async function loadConversations(background = false) {
   if (!background) {
-    const cached = getCachedCompanions(MESSAGES_FILTER);
-    const hasLocal = (cached?.length ?? 0) > 0 || Object.keys(chat.lastMessages).length > 0;
-    if (!hasLocal) loading.value = true;
+    loading.value = true;
   }
   try {
-    const all = (await fetchCompanions(MESSAGES_FILTER)) || [];
+    const all = (await fetchCompanions(MESSAGES_FILTER, { force: true })) || [];
     rawCompanions.value = all;
     conversations.value = buildConversations(all);
     connectBackgroundWs(all);
@@ -184,11 +182,9 @@ watch(
 );
 
 // 仅用 onShow：首进页也会触发，避免再叠 onMounted 导致后台 WS 连两次被立刻关掉
-let messagesShownOnce = false;
+// 每次进入都强制刷新会话列表
 onShow(() => {
-  const background = messagesShownOnce || Boolean(initialCached?.length);
-  messagesShownOnce = true;
-  loadConversations(background);
+  loadConversations(false);
 });
 
 onPageScroll((e) => {
@@ -210,10 +206,15 @@ watch(
         <text class="page-title">{{ t("messages.title") }}</text>
         <text class="menu-btn" @tap="bindAnalyticsTap('messages-menu', openMenu, '消息页菜单')">＋</text>
       </view>
-      <view class="search-wrap flex-row items-center gap-sm">
-        <text>🔍</text>
-        <input v-model="searchQuery" class="search-input" :placeholder="t('messages.searchPlaceholder')" />
-      </view>
+      <up-input
+      prefixIconStyle="font-size: 22px;color: #909399"
+        v-model="searchQuery"
+        :placeholder="t('messages.searchPlaceholder')"
+        prefix-icon="search"
+        shape="round"
+        :border="false"
+        :custom-style="{ backgroundColor: 'var(--bg-input)', borderRadius: '999px' }"
+      />
     </view>
 
     <view class="feedback-row px-md" @tap="bindAnalyticsTap('messages-feedback', goFeedback, '意见反馈')">
@@ -250,19 +251,27 @@ watch(
       </view>
     </view>
 
-    <view v-if="showMenu" class="sheet-mask" @tap="bindAnalyticsTap('messages-close-menu', closeMenu, '关闭菜单')">
-      <view class="sheet" @tap.stop>
-        <text class="sheet-title">{{ t("messages.chooseAction") }}</text>
-        <view class="sheet-item" @tap="bindAnalyticsTap('messages-create-companion', goCreateCompanion, '创建伴侣')">
-          <text>➕ {{ t("home.create") }}</text>
-          <text class="text-muted">{{ t("messages.createCompanionHint") }}</text>
-        </view>
-        <view class="sheet-item" @tap="bindAnalyticsTap('messages-my-companions', goMyCompanions, '我的伴侣')">
-          <text>👥 {{ t("messages.viewAllCompanions") }}</text>
-          <text class="text-muted">{{ t("messages.allCompanionsDesc") }}</text>
+    <up-popup :show="showMenu" mode="bottom" :safe-area-inset-bottom="true" round="32" @close="closeMenu">
+      <view class="popup-content">
+        <view class="popup-title">{{ t("messages.chooseAction") }}</view>
+        <view class="popup-menu">
+          <view class="popup-item" @click="bindAnalyticsTap('messages-create-companion', goCreateCompanion, '创建伴侣')">
+            <view class="popup-icon create">＋</view>
+            <view class="popup-text">
+              <text class="popup-item-title">{{ t("home.create") }}</text>
+              <text class="popup-item-desc">{{ t("messages.createCompanionHint") }}</text>
+            </view>
+          </view>
+          <view class="popup-item" @click="bindAnalyticsTap('messages-my-companions', goMyCompanions, '我的伴侣')">
+            <view class="popup-icon list">👥</view>
+            <view class="popup-text">
+              <text class="popup-item-title">{{ t("messages.viewAllCompanions") }}</text>
+              <text class="popup-item-desc">{{ t("messages.allCompanionsDesc") }}</text>
+            </view>
+          </view>
         </view>
       </view>
-    </view>
+    </up-popup>
   </AppPageShell>
 </template>
 
@@ -270,16 +279,7 @@ watch(
 .header { padding-top: 16rpx; }
 .page-title { font-size: 40rpx; font-weight: 600; }
 .menu-btn { font-size: 48rpx; padding: 8rpx 16rpx; }
-.search-wrap { display: flex; align-items: center; gap: 12rpx; background: var(--bg-input); border-radius: 999px; padding: 16rpx 24rpx; margin-bottom: 16rpx; }
-.search-input {
-  flex: 1;
-  font-size: 28rpx;
-  color: var(--fg);
-  height: auto !important;
-  min-height: 56rpx;
-  line-height: 1.4;
-  overflow: visible;
-}
+
 .feedback-row {
   display: flex; gap: 16rpx; align-items: center; padding: 24rpx 32rpx; border-bottom: 1px solid var(--border);
 }
@@ -304,16 +304,78 @@ watch(
 .empty { padding: 80rpx 32rpx; text-align: center; }
 .hint { display: block; font-size: 24rpx; margin-top: 8rpx; }
 .center { text-align: center; }
-.sheet-mask {
-  position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.5);
-  display: flex; align-items: flex-end; justify-content: center;
+.popup-content {
+  padding: 32rpx;
+  padding-bottom: calc(32rpx + env(safe-area-inset-bottom));
+  background: var(--bg-card);
 }
-.sheet {
-  width: 100%; max-width: 750rpx; background: var(--bg-card); border-radius: 32rpx 32rpx 0 0;
-  padding: 32rpx; padding-bottom: calc(32rpx + env(safe-area-inset-bottom));
+
+.popup-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: var(--fg);
+  text-align: center;
+  margin-bottom: 28rpx;
 }
-.sheet-title { display: block; font-weight: 600; margin-bottom: 24rpx; }
-.sheet-item { padding: 24rpx; background: var(--bg-input); border-radius: 16rpx; margin-bottom: 16rpx; }
+
+.popup-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.popup-item {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  padding: 28rpx 32rpx;
+  background: var(--bg-input);
+  border-radius: 24rpx;
+  transition: opacity 0.2s ease;
+  
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.popup-icon {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+  flex-shrink: 0;
+  
+  &.create {
+    background: linear-gradient(135deg, #ec4899, #f472b6);
+    color: #fff;
+  }
+  
+  &.list {
+    background: linear-gradient(135deg, #9333ea, #a78bfa);
+    color: #fff;
+  }
+}
+
+.popup-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.popup-item-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.popup-item-desc {
+  font-size: 24rpx;
+  color: var(--fg-muted);
+}
 .flex-1 { flex: 1; min-width: 0; }
 .mb-md { margin-bottom: 24rpx; }
 </style>

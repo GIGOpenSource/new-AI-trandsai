@@ -36,7 +36,7 @@ async function handleRegister() {
     return;
   }
   if (!trimmedNickname) {
-    error.value = t("register.errorNickname", { defaultValue: "请输入昵称" });
+    error.value = t("register.errorNickname");
     return;
   }
   if (!password.value || password.value.length < 6) {
@@ -90,13 +90,14 @@ const genderOptions = [
   { value: "secret", label: () => t("register.secret") },
 ];
 
-const orientations = [
+const orientationKeys = [
   "heterosexual", "homosexual", "bisexual", "pansexual", "asexual", "secret",
 ];
+const orientationLabels = orientationKeys.map(key => t(`register.${key}`));
 
 function onOrientationChange(e) {
   const idx = Number(e?.detail?.value ?? 0);
-  sexualOrientation.value = orientations[idx] || orientations[0];
+  sexualOrientation.value = orientationKeys[idx] || orientationKeys[0];
 }
 
 function goPrivacy() {
@@ -152,8 +153,8 @@ function goLogin() {
 
         <text class="label mt-md">{{ t("register.sexualOrientation") }}</text>
         <picker
-          :range="orientations"
-          :value="orientations.indexOf(sexualOrientation)"
+          :range="orientationLabels"
+          :value="orientationKeys.indexOf(sexualOrientation)"
           @change="onOrientationChange"
         >
           <view class="input-field mt-md">{{ t(`register.${sexualOrientation}`) }}</view>

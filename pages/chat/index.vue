@@ -629,12 +629,26 @@ watch(historyLoading, (loading) => {
               class="flex-row bubble-row-user"
             >
               <view class="bubble-col">
-                <view
-                  class="chat-bubble-user"
-                  :class="userBubbleShape(row.layout)"
-                  @longpress="copyMessage(row.message.text)"
-                >
-                  <text class="bubble-text">{{ row.message.text }}</text>
+                <view class="bubble-with-status">
+                  <view
+                    v-if="chat.sendingMsgIds.has(row.message.id)"
+                    class="pending-indicator"
+                  >
+                    <view class="status-spinner" />
+                  </view>
+                  <view
+                    v-else-if="chat.pendingMsgIds.has(row.message.id)"
+                    class="pending-indicator"
+                  >
+                    <up-icon name="info-circle-fill" color="#ef4444" size="20" />
+                  </view>
+                  <view
+                    class="chat-bubble-user"
+                    :class="userBubbleShape(row.layout)"
+                    @longpress="copyMessage(row.message.text)"
+                  >
+                    <text class="bubble-text">{{ row.message.text }}</text>
+                  </view>
                 </view>
                 <text
                   v-if="row.layout.showFootTime && row.message.time"
@@ -983,6 +997,31 @@ watch(historyLoading, (loading) => {
 .bubble-col {
   max-width: 75%;
   min-width: 0;
+}
+
+.bubble-with-status {
+  display: flex;
+  align-items: flex-end;
+  gap: 8rpx;
+}
+
+.pending-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40rpx;
+  height: 40rpx;
+  flex-shrink: 0;
+  margin-bottom: 8rpx;
+}
+
+.status-spinner {
+  width: 24rpx;
+  height: 24rpx;
+  border: 3rpx solid rgba(236, 72, 153, 0.25);
+  border-top-color: rgba(236, 72, 153, 0.8);
+  border-radius: 50%;
+  animation: spin 0.85s linear infinite;
 }
 
 .bubble-text {

@@ -1,7 +1,7 @@
 <script setup>
 /**
  * @file pages-sub/notifications — 通知列表
- * @description 聚合：新动态、AI 回复评论、系统通知。聊天未读只在 IM 列表展示。
+ * @description 聚合：朋友圈新动态 + 系统通知。支持触底分页加载。
  * @depends apiFetch、storage、utils/notifications
  */
 import { ref, computed, onMounted } from "vue";
@@ -18,19 +18,31 @@ import { readHomeMomentsCache } from "@/utils/homeCache";
 import { useRelativeTime } from "@/composables/useRelativeTime";
 import {
   buildMomentPostItems,
-  buildMomentReplyItems,
-  mergeMomentsComments,
   parseStoredIdList,
-  readViewedReplyIds,
-  writeViewedReplyIds,
 } from "@/utils/notifications";
 
 const { t, locale } = useI18n();
 const { format: formatTime } = useRelativeTime("messages");
 requireAuth();
 
-const notifications = ref([]);
+const PAGE_SIZE = 5;
+let momentsOffset = 0;
+
+/** 朋友圈通知 items */
+const momentItems = ref([]);
+/** 系统通知 items */
+const systemNotifs = ref([]);
+/** 合并排序后的全部通知（computed 自动响应） */
+const notifications = computed(() => {
+  const list = [...momentItems.value, ...systemNotifs.value];
+  list.sort((a, b) => new Date(b.time || 0).getTime() - new Date(a.time || 0).getTime());
+  return list;
+});
+
 const filter = ref("all");
+const loading = ref(true);
+const loadingMore = ref(false);
+const hasMore = ref(true);
 
 const filtered = computed(() =>
   filter.value === "all"

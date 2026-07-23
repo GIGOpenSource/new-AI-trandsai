@@ -285,8 +285,8 @@ function setReplyTo(comment) {
 
 <style scoped lang="scss">
 .center { text-align: center; padding: 80rpx 0; }
-.detail-wrap { display: flex; flex-direction: column; height: calc(100vh - 120rpx); }
-.scroll-area { flex: 1; }
+.detail-wrap { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.scroll-area { flex: 1; min-height: 0; }
 .block { margin: 24rpx 32rpx; padding: 24rpx; }
 .caption { display: block; margin: 16rpx 0; line-height: 1.6; }
 .generating { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; background: var(--bg-input); border-radius: 16rpx; color: var(--fg-muted); }
@@ -302,10 +302,17 @@ function setReplyTo(comment) {
 .comment-name { display: block; font-size: 22rpx; margin-bottom: 4rpx; &.me { color: var(--brand); } }
 .input-bar {
   border-top: 1px solid var(--border); background: var(--bg-card);
+  padding: 16rpx 24rpx calc(env(safe-area-inset-bottom) + 16rpx);
+  flex-shrink: 0;
+}
+.input-bar .flex-row {
+  align-items: center;
 }
 .send-btn {
-  width: 72rpx; height: 72rpx; border-radius: 50%; padding: 0;
+  width: 72rpx; height: 72rpx; border-radius: 50%; padding: 0; margin: 0;
   background: var(--brand); color: #fff; font-size: 28rpx;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
 }
 .send-spinner {
   display: inline-block;

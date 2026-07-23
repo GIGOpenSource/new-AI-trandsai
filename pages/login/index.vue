@@ -24,8 +24,16 @@ const loading = ref(false);
 /** 提交登录：成功写 token/user_info 并进首页 */
 async function handleLogin() {
   error.value = "";
-  if (!email.value.trim() || !password.value) {
+  if (!email.value.trim() && !password.value) {
     error.value = t("login.errorEmpty");
+    return;
+  }
+  if (!email.value.trim()) {
+    error.value = t("login.errorEmailEmpty");
+    return;
+  }
+  if (!password.value) {
+    error.value = t("login.errorPwdEmpty");
     return;
   }
   loading.value = true;

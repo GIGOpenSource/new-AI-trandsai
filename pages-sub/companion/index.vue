@@ -266,7 +266,7 @@ const aboutCards = computed(() => {
       {{ error || t("companionProfile.notFound") }}
     </view>
 
-    <view v-else class="px-md py-sm">
+    <view v-else class="page-content px-md py-sm">
       <view class="header-actions">
         <text @tap="bindAnalyticsTap('companion-profile-menu', toggleMenu, '伴侣菜单')">⚙</text>
         <view v-if="showMenu && companion" class="menu-popup">
@@ -281,8 +281,8 @@ const aboutCards = computed(() => {
         <view class="skeleton hero-meta-skeleton" />
       </view>
       <view v-else class="hero flex-col items-center">
-        <AppAvatarImage :src="companion.avatar" :seed="companionId" :generating="companion.avatar_generating" />
-        <view class="affection-badge">{{ formatAffectionDisplay(state().affection) }}</view>
+        <AppAvatarImage size="lg" :src="companion.avatar" :seed="companionId" :generating="companion.avatar_generating" />
+        <view class="affection-badge">{{ formatAffectionDisplay(profile().affection) }}</view>
         <text class="hero-name">{{ displayName }}</text>
         <text class="text-muted hero-meta">{{ displayMeta }}</text>
         <text v-if="profile().mbti" class="mbti-chip">{{ profile().mbti }}</text>
@@ -313,10 +313,10 @@ const aboutCards = computed(() => {
       </view>
 
       <view class="flex-row gap-sm mt-md">
-        <button class="btn-primary flex-1" :disabled="!companion" @tap="bindAnalyticsTap('companion-profile-chat', openChat, '聊天')">{{ t("companionProfile.sendMessage") }}</button>
+        <button class="btn-primary flex-1 btn-short"  style="height: 90rpx;line-height: 90rpx;border-radius: 60rpx;" :disabled="!companion" @tap="bindAnalyticsTap('companion-profile-chat', openChat, '聊天')">{{ t("companionProfile.sendMessage") }}</button>
         <button
           v-if="companion && !isCreator()"
-          class="btn-outline flex-1"
+          class="btn-outline flex-1 btn-short"
           @tap="bindAnalyticsTap('companion-profile-clone', cloneCompanion, '克隆')"
         >{{ t("companionProfile.clone") }}</button>
       </view>
@@ -357,7 +357,8 @@ const aboutCards = computed(() => {
         class="delete-footer mt-md"
         @tap="bindAnalyticsTap('companion-profile-delete-footer', deleteCompanion, '底部删除伴侣')"
       >
-        🗑 {{ t("companionProfile.deleteCompanion") }}
+        <view><up-icon name="trash" size="22"></up-icon> </view>
+        <view>{{ t("companionProfile.deleteCompanion") }}</view>
       </button>
     </view>
 
@@ -375,7 +376,13 @@ const aboutCards = computed(() => {
 
 <style scoped lang="scss">
 .center { text-align: center; padding: 80rpx 0; }
-.header-actions { display: flex; justify-content: flex-end; position: relative; }
+.page-content { 
+  // // min-height: 100vh; 
+  // height: 100%;
+  background: var(--bg); 
+}
+.header-actions { display: flex; justify-content: flex-end; position: relative; padding: 16rpx 0; }
+.header-actions text { font-size: 60rpx; padding: 8rpx; }
 .menu-popup {
   position: absolute; right: 0; top: 48rpx; background: var(--bg-card);
   border: 1px solid var(--border); border-radius: 16rpx; z-index: 50; min-width: 240rpx;
@@ -395,10 +402,12 @@ const aboutCards = computed(() => {
   display: inline-block; width: 64rpx; height: 36rpx; border-radius: 8rpx; margin-bottom: 8rpx;
 }
 .affection-badge {
-  margin-top: -24rpx; background: var(--brand); color: #fff;
+  margin-top: -20rpx; background: var(--brand); color: #fff;
   padding: 8rpx 24rpx; border-radius: 999px; font-size: 24rpx;
+  position: relative;
+  z-index: 10;
 }
-.hero-name { font-size: 40rpx; font-weight: 600; margin-top: 16rpx; }
+.hero-name { font-size: 40rpx; font-weight: 600; margin-top: 24rpx; }
 .hero-meta {
   font-size: 24rpx;
   margin-top: 8rpx;
@@ -417,6 +426,11 @@ const aboutCards = computed(() => {
   background: transparent; border: 1px solid var(--border); color: var(--fg);
   border-radius: 24rpx; padding: 24rpx; font-size: 28rpx;
 }
+.btn-short {
+  height: 80rpx;
+  line-height: 80rpx;
+  padding: 0 32rpx;
+}
 .tabs text {
   flex: 1; text-align: center; padding: 20rpx; color: var(--fg-muted);
   &.active { color: var(--brand); border-bottom: 2px solid var(--brand); }
@@ -430,6 +444,15 @@ const aboutCards = computed(() => {
 .delete-footer {
   border-radius: 999px;
   font-size: 28rpx;
+  display: flex;
+  height: 90rpx;
+  line-height: 90rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  view{
+    margin-left: 10rpx;
+  }
 }
 .py-lg { padding: 80rpx 0; }
 .flex-1 { flex: 1; }

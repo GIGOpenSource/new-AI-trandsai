@@ -432,7 +432,7 @@ onMounted(async () => {
   accessDenied.value = false;
 
   chat.setActiveCompanionId(companionId);
-  chat.connect(companionId);
+  chat.connect(companionId, { force: true });
   chat.clearUnread(companionId);
 
   try {

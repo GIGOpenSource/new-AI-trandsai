@@ -76,9 +76,9 @@ function onConfirm() {
 }
 .dlg-btn {
   flex: 1;
-  border-radius: 20rpx;
+  border-radius: 40rpx;
   font-size: 28rpx;
-  padding: 20rpx 0;
+  padding: 10rpx 0;
   border: none;
   &.cancel {
     background: var(--bg-input);

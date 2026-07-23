@@ -20,28 +20,34 @@ const password = ref("");
 const showPassword = ref(false);
 const error = ref("");
 const loading = ref(false);
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** 提交登录：成功写 token/user_info 并进首页 */
 async function handleLogin() {
   error.value = "";
-  if (!email.value.trim() && !password.value) {
-    error.value = t("login.errorEmpty");
-    return;
-  }
-  if (!email.value.trim()) {
-    error.value = t("login.errorEmailEmpty");
-    return;
-  }
-  if (!password.value) {
-    error.value = t("login.errorPwdEmpty");
-    return;
-  }
+  const trimEmail = email.value.trim();
+    if (!trimEmail && !password.value) {
+      error.value = t("login.errorEmpty");
+      return;
+    }
+    if (!trimEmail) {
+      error.value = t("login.errorEmailEmpty");
+      return;
+    }
+    if (!EMAIL_REGEX.test(trimEmail)) {
+      error.value = t("login.errorEmailFormat");
+      return;
+    }
+    if (!password.value) {
+      error.value = t("login.errorPwdEmpty");
+      return;
+    }
   loading.value = true;
   try {
     const res = await rawFetch("/api/auth/login", {
       method: "POST",
       header: { "Content-Type": "application/json" },
-      data: { username: email.value.trim(), password: password.value },
+      data: { username: trimEmail, password: password.value },
     });
     if (!res.ok) {
       error.value = (res.data).detail || (t("login.errorFailed"));

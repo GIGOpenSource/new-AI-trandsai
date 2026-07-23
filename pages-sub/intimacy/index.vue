@@ -38,24 +38,23 @@ function mapIntimacyCompanions(data) {
     .sort((a, b) => b.affection - a.affection);
 }
 
-const cached = getCachedCompanions();
-const companions = ref(cached ? mapIntimacyCompanions(cached) : []);
-const loading = ref(!companions.value.length);
+const companions = ref([]);
+const loading = ref(true);
 
 // ——— 加载 ———
 async function loadIntimacy(silent = false) {
-  if (!silent && !companions.value.length) loading.value = true;
+  if (!silent) loading.value = true;
   try {
-    const data = await fetchCompanions();
+    const data = await fetchCompanions({ filter_type: "mine_chatted" }, { force: true });
     companions.value = mapIntimacyCompanions(data);
   } finally {
     loading.value = false;
   }
 }
 
-onMounted(() => loadIntimacy(!!companions.value.length));
+onMounted(() => loadIntimacy(false));
 onShow(() => {
-  if (companions.value.length) loadIntimacy(true);
+  loadIntimacy(false);
 });
 
 // ——— 等级 ———

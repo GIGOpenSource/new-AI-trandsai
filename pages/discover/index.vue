@@ -459,17 +459,20 @@ onMounted(() => {
             <text>🤖 {{ t("discover.tabCompanions") }}</text>
           </view>
         </view>
-
-        <template v-if="activeTab === 'posts'">
-          <view class="search-wrap flex-row items-center gap-sm">
-            <text class="search-icon">🔍</text>
-            <input
-              v-model="searchQuery"
-              class="search-input"
-              :placeholder="t('discover.searchPlaceholder')"
-            />
-            <text v-if="searchQuery" class="search-clear" @tap="searchQuery = ''">✕</text>
-          </view>
+		
+		<template v-if="activeTab === 'posts'">
+        <view class="search-wrap">
+          <text class="search-icon">🔍</text>
+          <u-input
+            v-model="searchQuery"
+            :placeholder="t('discover.searchPlaceholder')"
+            border="none"
+            placeholder-class="search-placeholder"
+            :custom-style="{ height: '56rpx', lineHeight: '56rpx' }"
+            class="search-input"
+          />
+          <text v-if="searchQuery" class="search-clear" @tap="searchQuery = ''">✕</text>
+        </view>
 
           <scroll-view scroll-x class="category-scroll" show-scrollbar="false">
             <view class="category-row">
@@ -757,8 +760,9 @@ onMounted(() => {
 .btn-new-post { padding: 12rpx 28rpx; background: linear-gradient(90deg, var(--brand), var(--brand-end)); color: #fff; }
 .tab-switch { display: flex; gap: 8rpx; padding: 8rpx; background: var(--bg-input); }
 .tab-switch-item { flex: 1; padding: 16rpx 0; color: var(--fg-muted); &.active { background: var(--bg-card); color: var(--fg); } }
-.search-wrap { display: flex; align-items: center; gap: 12rpx; padding: 16rpx 24rpx; background: var(--bg-input); }
-.search-input { flex: 1; color: var(--fg); height: auto !important; min-height: 56rpx; line-height: 1.4; overflow: visible; }
+.search-wrap { display: flex; align-items: center; gap: 12rpx; padding: 0 24rpx; background: var(--bg-input); border-radius: 999px; margin-bottom: 16rpx; height: 80rpx;}
+.search-input { flex: 1; color: var(--fg);}
+.search-placeholder {color: var(--fg-muted);}
 
 /* ===== 分类标签 ===== */
 .category-chip { display: inline-block; padding: 12rpx 28rpx; margin-right: 12rpx; background: var(--bg-input); border: 1px solid var(--border); color: var(--fg-muted); &.active { background: linear-gradient(90deg, var(--brand), var(--brand-end)); color: #fff; } }
@@ -876,18 +880,26 @@ onMounted(() => {
 }
 
 .post-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
 }
 
 .post-cat {
   font-size: 22rpx;
   border-radius: 999px;
-  margin-bottom: 12rpx;
+  display: inline-block;
+  padding: 4rpx 16rpx;
+  background: var(--bg-input);
+  color: var(--brand);
+  font-weight: 500;
+  align-self: flex-start;
+  margin-bottom: 4rpx;
 }
 
 .post-title {
   font-size: 30rpx;
   font-weight: 600;
-  margin-bottom: 8rpx;
   text-overflow: ellipsis;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;

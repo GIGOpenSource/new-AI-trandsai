@@ -41,7 +41,7 @@ import {
 } from "@/utils/notifications";
 import { formatCompanionName } from "@/utils/formatCompanion";
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 5;
 
 const { t, locale } = useI18n();
 const { format: formatRelativeTime } = useRelativeTime("home");
@@ -403,10 +403,7 @@ async function pollMomentAiReply(momentId, userCommentId) {
 }
 
 // ====================================================================
-// 发送评论：
-//   1. 立刻乐观追加用户评论并清空输入（不 loading 等 AI）
-//   2. POST 只等待评论落库；AI 后台生成
-//   3. 轮询合并 AI 回复；失败则回滚乐观评论
+// 发送评论：等接口成功后再显示，用接口返回的数据
 // ====================================================================
 async function handleComment(momentId, e) {
   const key = draftKey(momentId);
@@ -414,7 +411,6 @@ async function handleComment(momentId, e) {
   const content = (fromEvent ?? commentDrafts.value[key] ?? "").trim();
   if (!content || commentBusy.value[key]) return;
 
-  const tempId = `tmp-${key}-${Date.now()}`;
   commentBusy.value = { ...commentBusy.value, [key]: true };
   commentDrafts.value = { ...commentDrafts.value, [key]: "" };
   commentInputKeys.value = {
@@ -422,26 +418,6 @@ async function handleComment(momentId, e) {
     [key]: (commentInputKeys.value[key] || 0) + 1,
   };
   focusedCommentId.value = "";
-
-  patchMomentComments(momentId, (m) => ({
-    ...m,
-    comments_count: (m.comments_count || 0) + 1,
-    comments: [
-      ...(m.comments || []),
-      {
-        id: tempId,
-        user_id: getCurrentUserId(),
-        is_user: true,
-        companion_id: null,
-        companion_name: (() => { try { return JSON.parse(getItem("user_info") || "{}").nickname || ""; } catch { return ""; } })(),
-        content,
-        created_at: new Date().toISOString(),
-        pending: true,
-      },
-    ],
-  }));
-  // 输入区立刻恢复，不因 AI 生成卡住
-  commentBusy.value = { ...commentBusy.value, [key]: false };
 
   try {
     const data = await apiFetch(`/api/moments/${momentId}/comment`, {
@@ -451,32 +427,20 @@ async function handleComment(momentId, e) {
         "Content-Type": "application/json",
       },
       data: { content },
-      // 仅等用户评论落库；AI 在后台
       timeout: 20000,
     });
+
     if (data?.ok) {
+      // 接口成功后才添加评论，直接用接口返回的数据
       patchMomentComments(momentId, (m) => {
         const prev = m.comments || [];
-        const hadTemp = prev.some((c) => c.id === tempId);
         const hadReal = prev.some((c) => sameMomentId(c.id, data.id));
-        const withoutDup = prev.filter(
-          (c) => c.id !== tempId && !sameMomentId(c.id, data.id)
-        );
-        const newComments = [
-          ...withoutDup,
-          {
-            id: data.id,
-            user_id: getCurrentUserId(),
-            is_user: true,
-            companion_id: null,
-            companion_name: data.companion_name || (() => { try { return JSON.parse(getItem("user_info") || "{}").nickname || ""; } catch { return ""; } })(),
-            content: data.content || content,
-            created_at: data.created_at,
-          },
-        ];
-        let countDelta = 0;
-        if (!hadTemp && !hadReal) countDelta += 1;
-        // 兼容仍同步返回 ai_reply 的旧后端
+        if (hadReal) return m;
+
+        const newComments = [...prev, data];
+        let countDelta = 1;
+
+        // AI 回复
         if (
           data.ai_reply &&
           !prev.some((c) => sameMomentId(c.id, data.ai_reply.id)) &&
@@ -485,12 +449,14 @@ async function handleComment(momentId, e) {
           newComments.push(data.ai_reply);
           countDelta += 1;
         }
+
         return {
           ...m,
           comments_count: (m.comments_count || 0) + countDelta,
           comments: newComments,
         };
       });
+
       if (!data.ai_reply) {
         void pollMomentAiReply(momentId, data.id);
       } else {
@@ -511,11 +477,7 @@ async function handleComment(momentId, e) {
         hasUnread.value = computeHomeHasUnread(moments.value);
       }
     } else {
-      patchMomentComments(momentId, (m) => ({
-        ...m,
-        comments_count: Math.max(0, (m.comments_count || 0) - 1),
-        comments: (m.comments || []).filter((c) => c.id !== tempId),
-      }));
+      // 接口失败：恢复输入内容，toast 提示
       commentDrafts.value = { ...commentDrafts.value, [key]: content };
       commentInputKeys.value = {
         ...commentInputKeys.value,
@@ -525,29 +487,26 @@ async function handleComment(momentId, e) {
     }
   } catch (err) {
     console.error("评论失败:", err);
-    const msg = String(err?.errMsg || err?.message || err || "");
-    const timedOut = /timeout|超时|timed?\s*out/i.test(msg);
-    if (timedOut) {
-      // 旧后端仍同步等 AI 时可能超时：不回滚，改为轮询同步
-      void pollMomentAiReply(momentId, tempId);
-    } else {
-      patchMomentComments(momentId, (m) => ({
-        ...m,
-        comments_count: Math.max(0, (m.comments_count || 0) - 1),
-        comments: (m.comments || []).filter((c) => c.id !== tempId),
-      }));
-      commentDrafts.value = { ...commentDrafts.value, [key]: content };
-      commentInputKeys.value = {
-        ...commentInputKeys.value,
-        [key]: (commentInputKeys.value[key] || 0) + 1,
-      };
-    }
+    // 网络失败：恢复输入内容
+    commentDrafts.value = { ...commentDrafts.value, [key]: content };
+    commentInputKeys.value = {
+      ...commentInputKeys.value,
+      [key]: (commentInputKeys.value[key] || 0) + 1,
+    };
+    showToast(t("common.networkError") || "网络错误，请重试");
+  } finally {
+    commentBusy.value = { ...commentBusy.value, [key]: false };
   }
 }
 
 function isCommentByMe(comment) {
   if (!comment) return false;
-  return comment.is_me === true;
+  // 优先用接口返回的 is_me 字段
+  if (comment.is_me === true) return true;
+  // 兼容 GET 接口未返回 is_me 的情况，回退 user_id 比对
+  const uid = getCurrentUserId();
+  const userId = comment.user_id;
+  return userId != null && uid != null && String(userId) === String(uid);
 }
 
 // ───────────────── 筛选弹窗 ─────────────────
@@ -820,16 +779,14 @@ onShow(() => {
                 :class="{ mine: isCommentByMe(comment) }"
               >
                 {{
-                  comment.companion_name || formatCompanionName(comment.companion_name, t("home.defaultCompanionName"))
+                  isCommentByMe(comment)
+                    ? t("common.me")
+                    : (comment.companion_name || formatCompanionName(comment.companion_name, t("home.defaultCompanionName")))
                 }}
               </text>
               <text class="comment-content" :class="{ pending: comment.pending }">
-                <text v-if="comment.reply_to_name" :class="['reply-to', { 'text-primary': comment.is_reply_me }]">
-                  @{{
-                    comment.reply_to_name === "我"
-                      ? t("common.me")
-                      : comment.reply_to_name
-                  }}
+                <text v-if="!isCommentByMe(comment) && (comment.is_reply_me || comment.reply_to_name)" :class="['reply-to', { 'text-primary': comment.is_reply_me }]">
+                  @{{ comment.is_reply_me ? t("common.me") : comment.reply_to_name }}
                 </text>
                 {{ comment.content }}
               </text>
@@ -852,10 +809,11 @@ onShow(() => {
             />
             <view
               class="send-btn"
-              :class="{ disabled: commentBusy[String(m.id)] || !(commentDrafts[String(m.id)] || '').trim() }"
+              :class="{ disabled: commentBusy[String(m.id)] || !(commentDrafts[String(m.id)] || '').trim(), busy: commentBusy[String(m.id)] }"
               @tap="onSendCommentTap(m.id)"
             >
-              <text>➤</text>
+              <text v-if="commentBusy[String(m.id)]" class="send-spinner"></text>
+              <text v-else>➤</text>
             </view>
           </view>
         </view>
@@ -1173,6 +1131,18 @@ onShow(() => {
   padding: 12rpx 16rpx;
   color: var(--brand);
   &.disabled { opacity: 0.45; pointer-events: none; }
+}
+.send-spinner {
+  display: inline-block;
+  width: 28rpx;
+  height: 28rpx;
+  border: 4rpx solid rgba(236, 72, 153, 0.25);
+  border-top-color: var(--brand);
+  border-radius: 50%;
+  animation: send-spin 0.6s linear infinite;
+}
+@keyframes send-spin {
+  to { transform: rotate(360deg); }
 }
 .footer-hint {
   text-align: center;

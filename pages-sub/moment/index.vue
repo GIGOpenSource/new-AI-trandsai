@@ -164,7 +164,12 @@ async function handleSendComment(e) {
 
 function isMe(comment) {
   if (!comment) return false;
-  return comment.is_me === true;
+  // 优先用接口返回的 is_me 字段
+  if (comment.is_me === true) return true;
+  // 兼容未返回 is_me 的情况，回退 user_id 比对
+  const uid = getCurrentUserId();
+  const userId = comment.user_id;
+  return userId != null && uid != null && String(userId) === String(uid);
 }
 
 function setReplyTo(comment) {
@@ -215,12 +220,12 @@ function setReplyTo(comment) {
             <view class="flex-1">
               <view class="comment-bubble">
                 <text class="comment-name" :class="{ me: isMe(c) }">{{
-                  c.companion_name || formatCompanionName(c.companion_name, t("home.defaultCompanionName"))
+                  isMe(c)
+                    ? t("common.me")
+                    : (c.companion_name || formatCompanionName(c.companion_name, t("home.defaultCompanionName")))
                 }}</text>
                 <text>
-                <text v-if="c.reply_to_name" :class="{ 'text-primary': c.is_reply_me }">@{{
-                    c.reply_to_name === "我" ? t("common.me") : c.reply_to_name
-                  }} </text>
+                <text v-if="!isMe(c) && (c.is_reply_me || c.reply_to_name)" :class="{ 'text-primary': c.is_reply_me }">@{{ c.is_reply_me ? t("common.me") : c.reply_to_name }} </text>
                   {{ c.content }}
                 </text>
               </view>
@@ -264,7 +269,10 @@ function setReplyTo(comment) {
             @confirm="handleSendComment"
             @blur="onCommentBlur"
           />
-          <button class="send-btn" :disabled="sending || !commentText.trim() || !moment" @tap="handleSendComment">➤</button>
+          <button class="send-btn" :class="{ busy: sending }" :disabled="sending || !commentText.trim() || !moment" @tap="handleSendComment">
+            <text v-if="sending" class="send-spinner"></text>
+            <text v-else>➤</text>
+          </button>
         </view>
       </view>
     </view>
@@ -298,6 +306,18 @@ function setReplyTo(comment) {
 .send-btn {
   width: 72rpx; height: 72rpx; border-radius: 50%; padding: 0;
   background: var(--brand); color: #fff; font-size: 28rpx;
+}
+.send-spinner {
+  display: inline-block;
+  width: 32rpx;
+  height: 32rpx;
+  border: 4rpx solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: send-spin 0.6s linear infinite;
+}
+@keyframes send-spin {
+  to { transform: rotate(360deg); }
 }
 .preview-mask {
   position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,0.9);

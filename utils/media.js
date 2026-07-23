@@ -97,8 +97,8 @@ export function normalizeMediaUrl(src) {
     trimmed.includes("placeholder") ||
     // 测试/脏数据占位域名（discover 帖子里偶发 https://xxx/1.jpg）
     /^https?:\/\/xxx(\/|$)/i.test(trimmed) ||
-    (trimmed.includes("picsum.photos") && trimmed.length < 30) ||
-    (trimmed.startsWith("http") && trimmed.includes("x.ai"))
+    (trimmed.includes("picsum.photos") && trimmed.length < 30)
+    // (trimmed.startsWith("http") && trimmed.includes("x.ai")) 
   ) {
     // 已知脏数据静默兜底，避免刷屏；其它异常仍打 warn 便于排查
     const knownJunk = /^https?:\/\/xxx(\/|$)/i.test(trimmed) ||

@@ -33,13 +33,15 @@ const commentFocus = ref(false);
 const sending = ref(false);
 const previewImage = ref(null);
 const replyTo = ref(null);
-const scrollTop = ref(0);
+const scrollIntoView = ref("");
 
 onLoad((q) => { momentId = String(q?.id || ""); });
 
-let _scrollSeq = 0;
 function scrollBottom() {
-  scrollTop.value = ++_scrollSeq * 99999;
+  scrollIntoView.value = "";
+  void nextTick(() => {
+    scrollIntoView.value = "bottom-anchor";
+  });
 }
 
 function captureReplyNotifs(prevReplyIds = new Set()) {
@@ -116,6 +118,7 @@ async function pollAiReply(afterCount) {
       const count = moment.value?.comments?.length || 0;
       if (count > afterCount) {
         captureReplyNotifs(prevReplyIds);
+        void nextTick(() => { scrollBottom(); });
         return;
       }
     } catch (e) {
@@ -147,7 +150,7 @@ async function handleSendComment(e) {
       : (curReplyTo.companion_name || t("home.defaultCompanionName"));
   }
 
-  // 乐观插入
+  // 乐观插入，同时清空输入框
   const comments = moment.value.comments || [];
   moment.value.comments = [...comments, optimistic];
   moment.value.comments_count = (moment.value.comments_count || 0) + 1;
@@ -158,6 +161,9 @@ async function handleSendComment(e) {
   replyTo.value = null;
 
   void nextTick(() => { scrollBottom(); });
+
+  // 保存当前回复信息，失败时需要恢复
+  const savedReplyTo = curReplyTo;
 
   const prevCount = comments.length;
   try {
@@ -175,11 +181,13 @@ async function handleSendComment(e) {
     if (data?.ok === false || data?.error) {
       moment.value.comments = moment.value.comments.filter((c) => c.id !== tempId);
       moment.value.comments_count = Math.max(0, (moment.value.comments_count || 0) - 1);
+      commentText.value = content;
+      replyTo.value = savedReplyTo;
       showToast("发送失败");
       return;
     }
     await fetchMoment();
-    setTimeout(() => { scrollBottom(); }, 200);
+    void nextTick(() => { scrollBottom(); });
     if (data?.ai_reply) {
       captureReplyNotifs(new Set());
     } else {
@@ -188,6 +196,8 @@ async function handleSendComment(e) {
   } catch (err) {
     moment.value.comments = moment.value.comments.filter((c) => c.id !== tempId);
     moment.value.comments_count = Math.max(0, (moment.value.comments_count || 0) - 1);
+    commentText.value = content;
+    replyTo.value = savedReplyTo;
     showToast("发送失败");
     console.error("评论失败:", err);
     const msg = String(err?.errMsg || err?.message || err || "");
@@ -219,7 +229,7 @@ function setReplyTo(comment) {
 <template>
   <AppPageShell title="朋友圈详情" :show-back="true">
     <view class="detail-wrap">
-      <scroll-view scroll-y class="scroll-area" :scroll-top="scrollTop">
+      <scroll-view scroll-y class="scroll-area" :scroll-into-view="scrollIntoView">
         <AppListSkeleton v-if="loading && !moment" :rows="3" />
         <view v-else-if="!moment" class="center text-muted">朋友圈不存在</view>
         <template v-else>
@@ -260,7 +270,7 @@ function setReplyTo(comment) {
                 <text class="comment-name" :class="{ me: isMe(c) }">{{
                   isMe(c)
                     ? t("common.me")
-                    : (c.companion_name || formatCompanionName(c.companion_name, t("home.defaultCompanionName")))
+                    : formatCompanionName(c.companion_name, t("home.defaultCompanionName"))
                 }}</text>
                 <text>
                 <text v-if="c.reply_to_name" :class="{ 'text-primary': c.is_reply_me }">@{{ c.reply_to_name }} </text>
@@ -271,6 +281,7 @@ function setReplyTo(comment) {
             </view>
           </view>
         </view>
+        <view id="bottom-anchor" style="height: 1rpx"></view>
         </template>
       </scroll-view>
 
@@ -326,7 +337,7 @@ function setReplyTo(comment) {
 .detail-wrap { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .scroll-area { flex: 1; min-height: 0; }
 .block { margin: 24rpx 32rpx; padding: 24rpx; }
-.caption { display: block; margin: 16rpx 0; line-height: 1.6; }
+.caption { display: block; margin: 16rpx 0; line-height: 1.6; word-break: break-all; overflow-wrap: break-word; }
 .generating { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; background: var(--bg-input); border-radius: 16rpx; color: var(--fg-muted); }
 .hero-img { width: 100%; border-radius: 16rpx; }
 .liked { color: var(--brand); }
@@ -337,6 +348,7 @@ function setReplyTo(comment) {
   display: flex; align-items: center; justify-content: center; font-size: 24rpx; flex-shrink: 0;
 }
 .comment-bubble { background: var(--bg-input); border-radius: 16rpx; padding: 16rpx 20rpx; word-break: break-all; overflow-wrap: break-word; }
+.comment-bubble text { word-break: break-all; }
 .comment-name { display: block; font-size: 22rpx; margin-bottom: 4rpx; &.me { color: var(--brand); } }
 .input-bar {
   border-top: 1px solid var(--border); background: var(--bg-card);

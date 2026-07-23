@@ -1,3 +1,13 @@
+# uni-app 编译产物
+unpackage/
+dist/
+
+# 依赖缓存
+node_modules
+.vite
+package-lock.json
+pnpm-lock.yaml
+
 # Dependencies
 node_modules/
 

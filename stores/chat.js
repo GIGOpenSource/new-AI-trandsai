@@ -84,6 +84,8 @@ export const useChatStore = defineStore("chat", () => {
   const typingCompanions = ref({});
   const activeCompanionId = ref(null);
   const ephemeral = ref({});
+  const sendingMsgIds = ref(new Set());
+  const pendingMsgIds = ref(new Set());
 
   // ——— 连接与重连内部表（非响应式） ———
   let msgIdCounter = 1000000;
@@ -223,11 +225,15 @@ export const useChatStore = defineStore("chat", () => {
     const userGender = getUserGender();
     for (const queued of pending) {
       try {
+        sendingMsgIds.value.add(queued.msgId);
+        pendingMsgIds.value.delete(queued.msgId);
         task.send({
-          data: JSON.stringify(buildChatWsPayload(queued, lang, userGender)),
+          data: JSON.stringify(buildChatWsPayload(queued.text, lang, userGender)),
         });
       } catch (err) {
         console.error("发送队列消息失败:", err);
+        sendingMsgIds.value.delete(queued.msgId);
+        pendingMsgIds.value.add(queued.msgId);
         break;
       }
     }
@@ -444,6 +450,12 @@ export const useChatStore = defineStore("chat", () => {
             ...typingCompanions.value,
             [companionId]: true,
           };
+          const userMsgs = (messages.value ?? []).filter(
+            (m) => m.companionId === companionId && m.sender === "user"
+          );
+          for (const m of userMsgs) {
+            sendingMsgIds.value.delete(m.id);
+          }
         } else if (data.type === "message" && data.role === "assistant") {
           const text = data.text || "";
           const time = formatNowMessageTime(locale);
@@ -451,6 +463,12 @@ export const useChatStore = defineStore("chat", () => {
             ...typingCompanions.value,
             [companionId]: false,
           };
+          const userMsgs = (messages.value ?? []).filter(
+            (m) => m.companionId === companionId && m.sender === "user"
+          );
+          for (const m of userMsgs) {
+            sendingMsgIds.value.delete(m.id);
+          }
           lastMessages.value = {
             ...lastMessages.value,
             [companionId]: {
@@ -570,9 +588,10 @@ export const useChatStore = defineStore("chat", () => {
   function sendMessage(companionId, text) {
     touchActive(companionId);
     const locale = localeForTime();
+    const msgId = nextMsgId();
     appendMessages([
       {
-        id: nextMsgId(),
+        id: msgId,
         companionId,
         sender: "user",
         text,
@@ -596,6 +615,7 @@ export const useChatStore = defineStore("chat", () => {
     if (task && isConnected.value[companionId]) {
       flushOutboxForCompanion(companionId);
       try {
+        sendingMsgIds.value.add(msgId);
         task.send({
           data: JSON.stringify(buildChatWsPayload(text, lang, userGender)),
         });
@@ -605,8 +625,10 @@ export const useChatStore = defineStore("chat", () => {
         };
       } catch (err) {
         console.error("发送消息失败:", err);
+        sendingMsgIds.value.delete(msgId);
+        pendingMsgIds.value.add(msgId);
         const pending = outbox[companionId] || [];
-        pending.push(text);
+        pending.push({ text, msgId });
         outbox[companionId] = pending;
         appendMessages([
           {
@@ -620,8 +642,9 @@ export const useChatStore = defineStore("chat", () => {
         ]);
       }
     } else {
+      pendingMsgIds.value.add(msgId);
       const pending = outbox[companionId] || [];
-      pending.push(text);
+      pending.push({ text, msgId });
       outbox[companionId] = pending;
       reconnectAttempts[companionId] = 0;
       connect(companionId);
@@ -648,6 +671,13 @@ export const useChatStore = defineStore("chat", () => {
   }
 
   function clearMessages(companionId) {
+    const companionMsgs = (messages.value ?? []).filter(
+      (m) => m.companionId === companionId
+    );
+    for (const m of companionMsgs) {
+      sendingMsgIds.value.delete(m.id);
+      pendingMsgIds.value.delete(m.id);
+    }
     messages.value = (messages.value ?? []).filter(
       (m) => m.companionId !== companionId
     );
@@ -759,6 +789,8 @@ export const useChatStore = defineStore("chat", () => {
     isConnected,
     typingCompanions,
     activeCompanionId,
+    sendingMsgIds,
+    pendingMsgIds,
     totalUnread,
     dismissMessage,
     mergeHistoryMessages,

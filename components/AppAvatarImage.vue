@@ -73,8 +73,8 @@ function onError() {
   height: 80rpx;
 }
 .size-lg {
-  width: 120rpx;
-  height: 120rpx;
+  width: 160rpx;
+  height: 160rpx;
 }
 .avatar-img {
   width: 100%;

@@ -5,7 +5,7 @@
  * @depends companionsCache、storage、AppAvatarImage
  */
 import { ref, computed, onMounted } from "vue";
-import { onShow } from "@dcloudio/uni-app";
+import { onShow, onLoad } from "@dcloudio/uni-app";
 import { useI18n } from "vue-i18n";
 import AppPageShell from "@/components/AppPageShell.vue";
 import AppAvatarImage from "@/components/AppAvatarImage.vue";
@@ -21,10 +21,25 @@ import { useChatStore } from "@/stores/chat";
 import { bindAnalyticsTap, bindAnalyticsTapArg } from "@/utils/analytics";
 
 const MY_COMPANIONS_HIDDEN_KEY = "my_companions_hidden_ids";
-const COMPANIONS_FILTER = { filter_type: "affectionate" };
 const { t, locale } = useI18n();
 const chat = useChatStore();
 requireAuth();
+
+const specialFrom = ref("");
+
+const companionsFilter = computed(() => {
+  if (specialFrom.value == 1) {
+    return { special:'message' };
+  }
+  return { is_create: 'none', intimacy_value: 5 };
+});
+
+const pageTitle = computed(() => {
+  if (specialFrom.value == 1) {
+    return t("messages.viewAllCompanions");
+  }
+  return t("profile.myCompanions");
+});
 
 // ——— 状态与隐藏 ———
 function mapCompanion(c) {
@@ -51,9 +66,8 @@ function mapCompanions(data) {
   return sorted.map(mapCompanion);
 }
 
-const cached = getCachedCompanions(COMPANIONS_FILTER);
-const companions = ref(cached ? mapCompanions(cached) : []);
-const loading = ref(!companions.value.length);
+const companions = ref([]);
+const loading = ref(true);
 const currentUserId = ref("");
 const hiddenIds = ref(new Set());
 const removeTargetId = ref(null);
@@ -80,14 +94,20 @@ function getAffectionLevel(affection) {
 
 // ——— 加载列表 ———
 async function loadCompanions(background = false) {
-  if (!background && !companions.value.length) loading.value = true;
+  if (!background) loading.value = true;
   try {
-    const data = await fetchCompanions(COMPANIONS_FILTER);
+    const data = await fetchCompanions(companionsFilter.value);
     companions.value = mapCompanions(data);
   } finally {
     loading.value = false;
   }
 }
+
+onLoad((options) => {
+  if (options?.a) {
+    specialFrom.value = options.a
+  }
+});
 
 onMounted(() => {
   hiddenIds.value = loadHidden();
@@ -140,8 +160,9 @@ const onRemoveTap = bindAnalyticsTapArg(
 
 <template>
   <AppPageShell
-    :title="t('profile.myCompanions')"
-    :show-back="true"
+    :title="pageTitle"
+    :show-back="specialFrom !== 'message'"
+    :show-tab-bar="specialFrom === 'message'"
     back-analytics-id="my-companions-back"
     back-analytics-name="我的伴侣页返回"
   >

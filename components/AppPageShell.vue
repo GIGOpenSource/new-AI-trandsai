@@ -120,6 +120,7 @@ function onBack() {
   display: flex;
   flex-direction: column;
   position: relative;
+  background: var(--bg);
 }
 
 .app-header-inner {

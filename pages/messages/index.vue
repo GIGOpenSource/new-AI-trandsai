@@ -22,7 +22,7 @@ import { formatCompanionName } from "@/utils/formatCompanion";
 const TAB_PATH = "/pages/messages/index";
 const tabScroll = useTabScrollStore();
 
-const MESSAGES_FILTER = { filter_type: "mine_chatted" };
+const MESSAGES_FILTER = { is_create: true,intimacy_value:0 };
 const { t } = useI18n();
 const chat = useChatStore();
 const { format: formatRelativeTime } = useRelativeTime("messages");
@@ -163,7 +163,8 @@ function goCreateCompanion() {
 
 function goMyCompanions() {
   showMenu.value = false;
-  uni.navigateTo({ url: "/pages-sub/my-companions/index" });
+  // uni.navigateTo({ url: "/pages-sub/my-companions/index?special="+'message' });
+  uni.navigateTo({ url: "/pages-sub/my-companions/index?a="+1 });
 }
 
 const onOpenChatTap = bindAnalyticsTapArg(
@@ -276,6 +277,10 @@ watch(
 </template>
 
 <style scoped lang="scss">
+page{
+  // height: 100%;
+  background: var(--bg);
+}
 .header { padding-top: 16rpx; }
 .page-title { font-size: 40rpx; font-weight: 600; }
 .menu-btn { font-size: 48rpx; padding: 8rpx 16rpx; }
@@ -289,8 +294,14 @@ watch(
 }
 .feedback-title { display: block; font-weight: 500; }
 .feedback-desc { font-size: 24rpx; }
-.list { border-top: 1px solid var(--border); }
-.conv-row { display: flex; gap: 16rpx; padding: 24rpx 32rpx; border-bottom: 1px solid var(--border); }
+.list { border-top: 1px solid var(--border);
+height: 70vh;
+overflow-y: scroll;
+
+}
+.conv-row { display: flex; gap: 16rpx; padding: 24rpx 32rpx; 
+  border-bottom: 1px solid var(--border);
+}
 .avatar-wrap { position: relative; flex-shrink: 0; }
 .badge {
   position: absolute; top: -4rpx; right: -4rpx; min-width: 36rpx; height: 36rpx;

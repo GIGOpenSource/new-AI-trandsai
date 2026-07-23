@@ -45,7 +45,8 @@ const loading = ref(true);
 async function loadIntimacy(silent = false) {
   if (!silent) loading.value = true;
   try {
-    const data = await fetchCompanions({ filter_type: "mine_chatted" }, { force: true });
+    
+    const data = await fetchCompanions({ is_create:'none',intimacy_value:0.001 }, { force: true });
     companions.value = mapIntimacyCompanions(data);
   } finally {
     loading.value = false;
@@ -126,4 +127,9 @@ function affectionInfo(a) {
 .score { color: var(--brand); font-weight: 600; }
 .flex-1 { flex: 1; }
 .py-lg { padding: 80rpx 0; }
+.px-md{
+  height: 100vh;
+  overflow-y: scroll;
+}
 </style>
+

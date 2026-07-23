@@ -485,8 +485,8 @@ function onAgeChange(e) {
             <text class="required">*</text>
           </text>
           <slider
-            :min="18"
-            :max="75"
+            :min="0"
+            :max="1000"
             :value="age"
             active-color="#ec4899"
             background-color="var(--border)"
@@ -494,8 +494,8 @@ function onAgeChange(e) {
             @change="onAgeChange"
           />
           <view class="range-hints">
-            <text class="text-muted">18</text>
-            <text class="text-muted">75</text>
+            <text class="text-muted">0</text>
+            <text class="text-muted">1000</text>
           </view>
           <text v-if="errors.age" class="error-text">{{ errors.age }}</text>
         </view>

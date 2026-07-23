@@ -36,6 +36,7 @@
     "errorEmpty": "请输入邮箱和密码",
 	"errorEmailEmpty": "请输入邮箱",
 	"errorPwdEmpty": "请输入密码",
+	"errorEmailFormat": "请输入正确的邮箱格式",
     "errorFailed": "登录失败",
     "loggingIn": "登录中..."
   },

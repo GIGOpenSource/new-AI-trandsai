@@ -54,6 +54,7 @@
     "subtitle": "开启沉浸式恋爱之旅",
     "//errorUsername": "用户名至少3个字符",
     "errorEmail": "请输入有效的邮箱地址",
+	 "errorNickname": "请输入昵称",
     "errorPassword": "密码至少6个字符",
     "errorConfirm": "两次输入的密码不一致",
     "errorFailed": "注册失败",
